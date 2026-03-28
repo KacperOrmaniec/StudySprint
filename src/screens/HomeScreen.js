@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
-  Alert,
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -82,14 +81,7 @@ export default function HomeScreen() {
   };
 
   const handleDelete = (id) => {
-    Alert.alert("Usuń przedmiot", "Na pewno chcesz usunąć ten przedmiot?", [
-      { text: "Anuluj", style: "cancel" },
-      {
-        text: "Usuń",
-        style: "destructive",
-        onPress: () => updateSubjects(deleteSubject(subjects, id)),
-      },
-    ]);
+    updateSubjects(deleteSubject(subjects, id));
   };
 
   const doneTasks = tasks.filter((t) => t.done).length;
