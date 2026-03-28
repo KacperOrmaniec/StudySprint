@@ -7,7 +7,6 @@ import {
   FlatList,
   Modal,
   ScrollView,
-  Alert,
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -27,98 +26,8 @@ import {
   persistTasks,
 } from "../logic/tasksLogic";
 
-export default function TasksScreen() {
-  const [tasks, setTasks] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-
-  const [subjectFilter, setSubjectFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("Wszystkie");
-  const [sortBy, setSortBy] = useState("data");
-
-  const [addModal, setAddModal] = useState(false);
-  const [editModal, setEditModal] = useState(false);
-  const [editTaskItem, setEditTaskItem] = useState(null);
-
-  const [formName, setFormName] = useState("");
-  const [formDesc, setFormDesc] = useState("");
-  const [formPriority, setFormPriority] = useState("średni");
-  const [formSubjectId, setFormSubjectId] = useState(null);
-  const [formError, setFormError] = useState("");
-
-  useFocusEffect(
-    useCallback(() => {
-      async function load() {
-        const t = await loadTasks();
-        const s = await loadData("subjects");
-        setTasks(t);
-        setSubjects(s || []);
-      }
-      load();
-    }, [])
-  );
-
-  const updateTasks = (updated) => {
-    setTasks(updated);
-    persistTasks(updated);
-  };
-
-  const openAdd = () => {
-    setFormName("");
-    setFormDesc("");
-    setFormPriority("średni");
-    setFormSubjectId(subjects.length > 0 ? subjects[0].id : null);
-    setFormError("");
-    setAddModal(true);
-  };
-
-  const handleAdd = () => {
-    const error = validateTaskName(formName);
-    if (error) {
-      setFormError(error);
-      return;
-    }
-    updateTasks([...tasks, createTask({ name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId })]);
-    setAddModal(false);
-  };
-
-  const openEdit = (task) => {
-    setEditTaskItem(task);
-    setFormName(task.name);
-    setFormDesc(task.description);
-    setFormPriority(task.priority);
-    setFormSubjectId(task.subjectId);
-    setFormError("");
-    setEditModal(true);
-  };
-
-  const handleSaveEdit = () => {
-    const error = validateTaskName(formName);
-    if (error) {
-      setFormError(error);
-      return;
-    }
-    updateTasks(editTask(tasks, editTaskItem.id, { name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId }));
-    setEditModal(false);
-  };
-
-  const handleDelete = (id) => {
-    Alert.alert("Usuń zadanie", "Na pewno chcesz usunąć to zadanie?", [
-      { text: "Anuluj", style: "cancel" },
-      {
-        text: "Usuń",
-        style: "destructive",
-        onPress: () => updateTasks(deleteTask(tasks, id)),
-      },
-    ]);
-  };
-
-  const handleToggleDone = (id) => {
-    updateTasks(toggleTaskDone(tasks, id));
-  };
-
-  const filteredTasks = filterAndSortTasks(tasks, subjectFilter, statusFilter, sortBy);
-
-  const TaskForm = () => (
+function TaskForm({ formName, setFormName, formDesc, setFormDesc, formPriority, setFormPriority, formSubjectId, setFormSubjectId, formError, setFormError, subjects }) {
+  return (
     <View>
       <Text style={styles.formLabel}>Nazwa *</Text>
       <TextInput
@@ -200,6 +109,91 @@ export default function TasksScreen() {
       </ScrollView>
     </View>
   );
+}
+
+export default function TasksScreen() {
+  const [tasks, setTasks] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("Wszystkie");
+  const [sortBy, setSortBy] = useState("data");
+
+  const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [editTaskItem, setEditTaskItem] = useState(null);
+
+  const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+  const [formPriority, setFormPriority] = useState("średni");
+  const [formSubjectId, setFormSubjectId] = useState(null);
+  const [formError, setFormError] = useState("");
+
+  useFocusEffect(
+    useCallback(() => {
+      async function load() {
+        const t = await loadTasks();
+        const s = await loadData("subjects");
+        setTasks(t);
+        setSubjects(s || []);
+      }
+      load();
+    }, [])
+  );
+
+  const updateTasks = (updated) => {
+    setTasks(updated);
+    persistTasks(updated);
+  };
+
+  const openAdd = () => {
+    setFormName("");
+    setFormDesc("");
+    setFormPriority("średni");
+    setFormSubjectId(subjects.length > 0 ? subjects[0].id : null);
+    setFormError("");
+    setAddModal(true);
+  };
+
+  const handleAdd = () => {
+    const error = validateTaskName(formName);
+    if (error) {
+      setFormError(error);
+      return;
+    }
+    updateTasks([...tasks, createTask({ name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId })]);
+    setAddModal(false);
+  };
+
+  const openEdit = (task) => {
+    setEditTaskItem(task);
+    setFormName(task.name);
+    setFormDesc(task.description);
+    setFormPriority(task.priority);
+    setFormSubjectId(task.subjectId);
+    setFormError("");
+    setEditModal(true);
+  };
+
+  const handleSaveEdit = () => {
+    const error = validateTaskName(formName);
+    if (error) {
+      setFormError(error);
+      return;
+    }
+    updateTasks(editTask(tasks, editTaskItem.id, { name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId }));
+    setEditModal(false);
+  };
+
+  const handleDelete = (id) => {
+    updateTasks(deleteTask(tasks, id));
+  };
+
+  const handleToggleDone = (id) => {
+    updateTasks(toggleTaskDone(tasks, id));
+  };
+
+  const filteredTasks = filterAndSortTasks(tasks, subjectFilter, statusFilter, sortBy);
 
   return (
     <View style={styles.container}>
@@ -354,7 +348,19 @@ export default function TasksScreen() {
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Dodaj zadanie</Text>
             <ScrollView>
-              <TaskForm />
+              <TaskForm
+                formName={formName}
+                setFormName={setFormName}
+                formDesc={formDesc}
+                setFormDesc={setFormDesc}
+                formPriority={formPriority}
+                setFormPriority={setFormPriority}
+                formSubjectId={formSubjectId}
+                setFormSubjectId={setFormSubjectId}
+                formError={formError}
+                setFormError={setFormError}
+                subjects={subjects}
+              />
             </ScrollView>
             <View style={styles.modalBtns}>
               <TouchableOpacity
@@ -377,7 +383,19 @@ export default function TasksScreen() {
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Edytuj zadanie</Text>
             <ScrollView>
-              <TaskForm />
+              <TaskForm
+                formName={formName}
+                setFormName={setFormName}
+                formDesc={formDesc}
+                setFormDesc={setFormDesc}
+                formPriority={formPriority}
+                setFormPriority={setFormPriority}
+                formSubjectId={formSubjectId}
+                setFormSubjectId={setFormSubjectId}
+                formError={formError}
+                setFormError={setFormError}
+                subjects={subjects}
+              />
             </ScrollView>
             <View style={styles.modalBtns}>
               <TouchableOpacity
