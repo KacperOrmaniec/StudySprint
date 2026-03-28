@@ -10,7 +10,15 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { saveData, loadData } from "../utils/storage";
+import { loadData } from "../utils/storage";
+import {
+  validateSubjectName,
+  addSubject,
+  editSubject,
+  deleteSubject,
+  loadSubjects,
+  persistSubjects,
+} from "../logic/subjectsLogic";
 
 export default function HomeScreen() {
   const [subjects, setSubjects] = useState([]);
@@ -21,17 +29,17 @@ export default function HomeScreen() {
   const [inputError, setInputError] = useState("");
 
   const [editModal, setEditModal] = useState(false);
-  const [editSubject, setEditSubject] = useState(null);
+  const [editSubjectItem, setEditSubjectItem] = useState(null);
   const [editInput, setEditInput] = useState("");
   const [editError, setEditError] = useState("");
 
   useFocusEffect(
     useCallback(() => {
       async function load() {
-        const s = await loadData("subjects");
+        const s = await loadSubjects();
         const sess = await loadData("sessions");
         const t = await loadData("tasks");
-        setSubjects(s || []);
+        setSubjects(s);
         setSessions(sess || []);
         setTasks(t || []);
       }
@@ -39,49 +47,47 @@ export default function HomeScreen() {
     }, [])
   );
 
-  const saveSubjects = (updated) => {
+  const updateSubjects = (updated) => {
     setSubjects(updated);
-    saveData("subjects", updated);
+    persistSubjects(updated);
   };
 
-  const addSubject = () => {
-    if (!input.trim()) {
-      setInputError("Nazwa przedmiotu nie może być pusta.");
+  const handleAdd = () => {
+    const error = validateSubjectName(input);
+    if (error) {
+      setInputError(error);
       return;
     }
-    const newSubject = { id: Date.now().toString(), name: input.trim() };
-    saveSubjects([...subjects, newSubject]);
+    updateSubjects(addSubject(subjects, input));
     setInput("");
     setInputError("");
   };
 
   const openEdit = (subject) => {
-    setEditSubject(subject);
+    setEditSubjectItem(subject);
     setEditInput(subject.name);
     setEditError("");
     setEditModal(true);
   };
 
-  const saveEdit = () => {
-    if (!editInput.trim()) {
-      setEditError("Nazwa przedmiotu nie może być pusta.");
+  const handleSaveEdit = () => {
+    const error = validateSubjectName(editInput);
+    if (error) {
+      setEditError(error);
       return;
     }
-    const updated = subjects.map((s) =>
-      s.id === editSubject.id ? { ...s, name: editInput.trim() } : s
-    );
-    saveSubjects(updated);
+    updateSubjects(editSubject(subjects, editSubjectItem.id, editInput));
     setEditModal(false);
-    setEditSubject(null);
+    setEditSubjectItem(null);
   };
 
-  const deleteSubject = (id) => {
+  const handleDelete = (id) => {
     Alert.alert("Usuń przedmiot", "Na pewno chcesz usunąć ten przedmiot?", [
       { text: "Anuluj", style: "cancel" },
       {
         text: "Usuń",
         style: "destructive",
-        onPress: () => saveSubjects(subjects.filter((s) => s.id !== id)),
+        onPress: () => updateSubjects(deleteSubject(subjects, id)),
       },
     ]);
   };
@@ -119,7 +125,7 @@ export default function HomeScreen() {
             setInputError("");
           }}
         />
-        <TouchableOpacity style={styles.addBtn} onPress={addSubject}>
+        <TouchableOpacity style={styles.addBtn} onPress={handleAdd}>
           <Text style={styles.addBtnText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -134,7 +140,7 @@ export default function HomeScreen() {
             <TouchableOpacity onPress={() => openEdit(item)} style={styles.actionBtn}>
               <Text style={styles.editText}>Edytuj</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => deleteSubject(item.id)} style={styles.actionBtn}>
+            <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.actionBtn}>
               <Text style={styles.deleteText}>Usuń</Text>
             </TouchableOpacity>
           </View>
@@ -164,7 +170,7 @@ export default function HomeScreen() {
               >
                 <Text style={styles.cancelBtnText}>Anuluj</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={saveEdit}>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveEdit}>
                 <Text style={styles.saveBtnText}>Zapisz</Text>
               </TouchableOpacity>
             </View>

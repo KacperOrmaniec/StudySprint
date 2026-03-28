@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
-import { loadData, saveData } from "../utils/storage";
-
-const STUDY_SECONDS = 25 * 60;
-const BREAK_SECONDS = 5 * 60;
+import { STUDY_SECONDS, BREAK_SECONDS, formatTime, saveSession } from "../logic/timerLogic";
 
 export default function TimerScreen() {
   const [seconds, setSeconds] = useState(STUDY_SECONDS);
   const [running, setRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
 
-  // Use a ref so the interval callback always sees the latest isBreak value
   const isBreakRef = useRef(false);
   const intervalRef = useRef(null);
 
@@ -36,14 +32,7 @@ export default function TimerScreen() {
 
   const handleTimerEnd = async () => {
     if (!isBreakRef.current) {
-      // Study session just ended — save it
-      const sessions = (await loadData("sessions")) || [];
-      const newSession = {
-        id: Date.now().toString(),
-        duration: 25,
-        completedAt: Date.now(),
-      };
-      await saveData("sessions", [...sessions, newSession]);
+      await saveSession();
 
       Alert.alert(
         "Sesja zakończona! 🎉",
@@ -55,7 +44,6 @@ export default function TimerScreen() {
       setIsBreak(true);
       setSeconds(BREAK_SECONDS);
     } else {
-      // Break just ended
       Alert.alert("Przerwa zakończona!", "Czas wracać do nauki.", [
         { text: "OK" },
       ]);
@@ -74,8 +62,7 @@ export default function TimerScreen() {
     setSeconds(STUDY_SECONDS);
   };
 
-  const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const secs = String(seconds % 60).padStart(2, "0");
+  const { minutes, secs } = formatTime(seconds);
 
   return (
     <View style={styles.container}>

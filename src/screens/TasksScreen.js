@@ -11,12 +11,21 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { saveData, loadData } from "../utils/storage";
-
-const PRIORITIES = ["wysoki", "średni", "niski"];
-const PRIORITY_COLORS = { wysoki: "#e74c3c", średni: "#f39c12", niski: "#27ae60" };
-const STATUS_FILTERS = ["Wszystkie", "Aktywne", "Ukończone"];
-const PRIORITY_ORDER = { wysoki: 0, średni: 1, niski: 2 };
+import { loadData } from "../utils/storage";
+import {
+  PRIORITIES,
+  PRIORITY_COLORS,
+  STATUS_FILTERS,
+  validateTaskName,
+  createTask,
+  editTask,
+  deleteTask,
+  toggleTaskDone,
+  filterAndSortTasks,
+  getSubjectName,
+  loadTasks,
+  persistTasks,
+} from "../logic/tasksLogic";
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState([]);
@@ -28,7 +37,7 @@ export default function TasksScreen() {
 
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [editTask, setEditTask] = useState(null);
+  const [editTaskItem, setEditTaskItem] = useState(null);
 
   const [formName, setFormName] = useState("");
   const [formDesc, setFormDesc] = useState("");
@@ -39,18 +48,18 @@ export default function TasksScreen() {
   useFocusEffect(
     useCallback(() => {
       async function load() {
-        const t = await loadData("tasks");
+        const t = await loadTasks();
         const s = await loadData("subjects");
-        setTasks(t || []);
+        setTasks(t);
         setSubjects(s || []);
       }
       load();
     }, [])
   );
 
-  const saveTasks = (updated) => {
+  const updateTasks = (updated) => {
     setTasks(updated);
-    saveData("tasks", updated);
+    persistTasks(updated);
   };
 
   const openAdd = () => {
@@ -62,26 +71,18 @@ export default function TasksScreen() {
     setAddModal(true);
   };
 
-  const addTask = () => {
-    if (!formName.trim()) {
-      setFormError("Nazwa zadania nie może być pusta.");
+  const handleAdd = () => {
+    const error = validateTaskName(formName);
+    if (error) {
+      setFormError(error);
       return;
     }
-    const newTask = {
-      id: Date.now().toString(),
-      name: formName.trim(),
-      description: formDesc.trim(),
-      priority: formPriority,
-      subjectId: formSubjectId,
-      done: false,
-      createdAt: Date.now(),
-    };
-    saveTasks([...tasks, newTask]);
+    updateTasks([...tasks, createTask({ name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId })]);
     setAddModal(false);
   };
 
   const openEdit = (task) => {
-    setEditTask(task);
+    setEditTaskItem(task);
     setFormName(task.name);
     setFormDesc(task.description);
     setFormPriority(task.priority);
@@ -90,59 +91,32 @@ export default function TasksScreen() {
     setEditModal(true);
   };
 
-  const saveEdit = () => {
-    if (!formName.trim()) {
-      setFormError("Nazwa zadania nie może być pusta.");
+  const handleSaveEdit = () => {
+    const error = validateTaskName(formName);
+    if (error) {
+      setFormError(error);
       return;
     }
-    const updated = tasks.map((t) =>
-      t.id === editTask.id
-        ? {
-            ...t,
-            name: formName.trim(),
-            description: formDesc.trim(),
-            priority: formPriority,
-            subjectId: formSubjectId,
-          }
-        : t
-    );
-    saveTasks(updated);
+    updateTasks(editTask(tasks, editTaskItem.id, { name: formName, description: formDesc, priority: formPriority, subjectId: formSubjectId }));
     setEditModal(false);
   };
 
-  const deleteTask = (id) => {
+  const handleDelete = (id) => {
     Alert.alert("Usuń zadanie", "Na pewno chcesz usunąć to zadanie?", [
       { text: "Anuluj", style: "cancel" },
       {
         text: "Usuń",
         style: "destructive",
-        onPress: () => saveTasks(tasks.filter((t) => t.id !== id)),
+        onPress: () => updateTasks(deleteTask(tasks, id)),
       },
     ]);
   };
 
-  const toggleDone = (id) => {
-    saveTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const handleToggleDone = (id) => {
+    updateTasks(toggleTaskDone(tasks, id));
   };
 
-  const getSubjectName = (id) => {
-    const s = subjects.find((s) => s.id === id);
-    return s ? s.name : "—";
-  };
-
-  const filteredTasks = tasks
-    .filter((t) => {
-      if (subjectFilter !== "all" && t.subjectId !== subjectFilter) return false;
-      if (statusFilter === "Aktywne" && t.done) return false;
-      if (statusFilter === "Ukończone" && !t.done) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === "priorytet") {
-        return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-      }
-      return b.createdAt - a.createdAt;
-    });
+  const filteredTasks = filterAndSortTasks(tasks, subjectFilter, statusFilter, sortBy);
 
   const TaskForm = () => (
     <View>
@@ -335,7 +309,7 @@ export default function TasksScreen() {
           <View style={[styles.taskCard, item.done && styles.taskCardDone]}>
             <TouchableOpacity
               style={styles.checkbox}
-              onPress={() => toggleDone(item.id)}
+              onPress={() => handleToggleDone(item.id)}
             >
               <Text style={styles.checkboxText}>{item.done ? "✓" : " "}</Text>
             </TouchableOpacity>
@@ -344,7 +318,7 @@ export default function TasksScreen() {
                 {item.name}
               </Text>
               <Text style={styles.taskMeta}>
-                {getSubjectName(item.subjectId)} •{" "}
+                {getSubjectName(subjects, item.subjectId)} •{" "}
                 <Text style={{ color: PRIORITY_COLORS[item.priority] }}>
                   {item.priority}
                 </Text>
@@ -357,7 +331,7 @@ export default function TasksScreen() {
               <Text style={{ fontSize: 18 }}>✏️</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => deleteTask(item.id)}
+              onPress={() => handleDelete(item.id)}
               style={styles.iconBtn}
             >
               <Text style={{ fontSize: 18 }}>🗑️</Text>
@@ -389,7 +363,7 @@ export default function TasksScreen() {
               >
                 <Text style={styles.cancelBtnText}>Anuluj</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={addTask}>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
                 <Text style={styles.saveBtnText}>Dodaj</Text>
               </TouchableOpacity>
             </View>
@@ -412,7 +386,7 @@ export default function TasksScreen() {
               >
                 <Text style={styles.cancelBtnText}>Anuluj</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveBtn} onPress={saveEdit}>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveEdit}>
                 <Text style={styles.saveBtnText}>Zapisz</Text>
               </TouchableOpacity>
             </View>

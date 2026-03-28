@@ -2,6 +2,12 @@ import React, { useState, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { loadData } from "../utils/storage";
+import {
+  calcTotalSessions,
+  calcTotalMinutes,
+  calcDoneTasks,
+  calcSubjectStats,
+} from "../logic/statsLogic";
 
 export default function StatsScreen() {
   const [sessions, setSessions] = useState([]);
@@ -22,16 +28,10 @@ export default function StatsScreen() {
     }, [])
   );
 
-  const totalSessions = sessions.length;
-  const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration || 25), 0);
-  const doneTasks = tasks.filter((t) => t.done).length;
-
-  const subjectStats = subjects.map((s) => ({
-    id: s.id,
-    name: s.name,
-    done: tasks.filter((t) => t.subjectId === s.id && t.done).length,
-    total: tasks.filter((t) => t.subjectId === s.id).length,
-  }));
+  const totalSessions = calcTotalSessions(sessions);
+  const totalMinutes = calcTotalMinutes(sessions);
+  const doneTasks = calcDoneTasks(tasks);
+  const subjectStats = calcSubjectStats(subjects, tasks);
 
   return (
     <View style={styles.container}>
