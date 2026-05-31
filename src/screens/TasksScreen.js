@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 import { loadData } from "../utils/storage";
 import {
   PRIORITY_COLORS,
@@ -43,6 +44,8 @@ export default function TasksScreen() {
   const [formSubjectId, setFormSubjectId] = useState(null);
   const [formError, setFormError] = useState("");
 
+  // DLACZEGO useFocusEffect: przedmioty (do filtrów i formularza) mogą zostać
+  // dodane na zakładce „Przedmioty" — odświeżamy zadania i przedmioty po wejściu.
   useFocusEffect(
     useCallback(() => {
       async function load() {
@@ -115,10 +118,14 @@ export default function TasksScreen() {
   };
 
   const handleDelete = (id) => {
+    // Wibracja ostrzegawcza przy usuwaniu — wyraźniejszy sygnał akcji niszczącej.
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     updateTasks(deleteTask(tasks, id));
   };
 
   const handleToggleDone = (id) => {
+    // Lekka wibracja potwierdzająca zaznaczenie/odznaczenie zadania.
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     updateTasks(toggleTaskDone(tasks, id));
   };
 

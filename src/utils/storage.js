@@ -1,3 +1,6 @@
+// Cienki wrapper na AsyncStorage. DLACZEGO osobny moduł: cała aplikacja
+// korzysta z jednego, spójnego API zapisu/odczytu (z serializacją JSON
+// i obsługą błędów w jednym miejscu), zamiast powtarzać try/catch w ekranach.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const saveData = async (key, value) => {
@@ -11,6 +14,8 @@ export const saveData = async (key, value) => {
 export const loadData = async (key) => {
   try {
     const json = await AsyncStorage.getItem(key);
+    // DLACZEGO rozróżniamy null: brak klucza zwraca null, by wołający mógł
+    // odróżnić „nic nie zapisano" od pustej tablicy i ustawić wartość domyślną.
     if (json == null) return null;
     return JSON.parse(json);
   } catch (e) {

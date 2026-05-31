@@ -14,6 +14,9 @@ export default function StatsScreen() {
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
+  // DLACZEGO useFocusEffect: statystyki muszą odświeżać się po każdej zmianie
+  // danych na innych zakładkach (nowa sesja, ukończone zadanie), a nie tylko
+  // przy pierwszym montażu ekranu.
   useFocusEffect(
     useCallback(() => {
       async function load() {

@@ -1,3 +1,7 @@
+// Czysta logika zadań, wydzielona z komponentów. DLACZEGO osobny moduł:
+// funkcje są bezstanowe i niemutujące (map/filter/spread zwracają nowe
+// tablice), dzięki czemu React poprawnie wykrywa zmianę referencji i
+// przerenderowuje listę — a logikę da się testować bez renderowania UI.
 import { saveData, loadData } from "../utils/storage";
 
 export const PRIORITIES = ["wysoki", "średni", "niski"];

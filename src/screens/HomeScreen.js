@@ -9,6 +9,10 @@ export default function HomeScreen() {
   const [sessions, setSessions] = useState([]);
   const [tasks, setTasks] = useState([]);
 
+  // DLACZEGO useFocusEffect, a nie useEffect: dane (sesje, zadania, przedmioty)
+  // zmieniają się na innych zakładkach i są trzymane w AsyncStorage. useEffect
+  // odpaliłby się tylko raz przy montażu, więc statystyki byłyby nieaktualne.
+  // useFocusEffect przeładowuje je za każdym wejściem na ten ekran.
   useFocusEffect(
     useCallback(() => {
       async function load() {

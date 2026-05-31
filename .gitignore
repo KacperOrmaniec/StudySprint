@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# internal audit notes (nie publikujemy w repo)
+audit.md

@@ -108,7 +108,18 @@ a komponenty ekranów pozostają cienką warstwą prezentacji + stanu lokalnego.
 
 ## 📸 Zrzuty ekranu
 
-> _TODO: dodać screenshoty / GIF z działającej aplikacji (Główna, Zadania, Timer, Statystyki)._
+|                 Główna                  |                Przedmioty                 |               Zadania               |
+| :-------------------------------------: | :---------------------------------------: | :---------------------------------: |
+| ![Ekran główny](./screenshots/home.png) | ![Przedmioty](./screenshots/subjects.png) | ![Zadania](./screenshots/tasks.png) |
+
+|               Timer               |               Statystyki               |
+| :-------------------------------: | :------------------------------------: |
+| ![Timer](./screenshots/timer.png) | ![Statystyki](./screenshots/stats.png) |
+
+> 📷 **Jak dograć własne zrzuty:** uruchom aplikację (`npm start`), zrób screenshoty
+> każdego ekranu i zapisz je w folderze [`screenshots/`](./screenshots) pod nazwami
+> `home.png`, `subjects.png`, `tasks.png`, `timer.png`, `stats.png`. Instrukcja
+> robienia zrzutów (w tym GIF-ów) znajduje się w [`screenshots/README.md`](./screenshots/README.md).
 
 ---
 

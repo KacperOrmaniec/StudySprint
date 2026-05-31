@@ -1,18 +1,63 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
+import * as Haptics from "expo-haptics";
 import {
   STUDY_SECONDS,
   BREAK_SECONDS,
   formatTime,
   saveSession,
 } from "../logic/timerLogic";
+import {
+  requestNotificationPermission,
+  sendLocalNotification,
+} from "../utils/notifications";
 
 export default function TimerScreen() {
   const [seconds, setSeconds] = useState(STUDY_SECONDS);
   const [running, setRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
 
+  // Zgoda na powiadomienia: pytamy raz przy wejściu na ekran. Jeśli użytkownik
+  // odmówi, aplikacja działa dalej (timer + wibracje), a my informujemy go, że
+  // powiadomienia po sesji się nie pojawią — czyli OBSŁUGA ODMOWY uprawnień.
+  useEffect(() => {
+    (async () => {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        Alert.alert(
+          "Powiadomienia wyłączone",
+          "Bez zgody na powiadomienia nie pokażemy alertu po zakończeniu sesji. " +
+            "Timer i wibracje działają normalnie. Zgodę możesz włączyć w ustawieniach systemu."
+        );
+      }
+    })();
+  }, []);
+
+  // useWindowDimensions reaguje na zmianę rozmiaru/orientacji ekranu w czasie
+  // rzeczywistym (inaczej niż Dimensions.get pobierane raz). Dzięki temu zegar
+  // skaluje się do urządzenia i nie jest przycinany w orientacji poziomej.
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  // Rozmiar zależny od krótszego boku, ograniczony do bezpiecznego zakresu.
+  const timerFontSize = Math.max(
+    56,
+    Math.min(120, Math.min(width, height) * 0.22)
+  );
+
+  // DLACZEGO ref, a nie tylko stan `isBreak`: callback w setInterval domyka się
+  // (closure) nad wartościami z momentu uruchomienia interwału. Gdyby
+  // handleTimerEnd czytał stan `isBreak`, widziałby przestarzałą wartość.
+  // Ref zawsze trzyma aktualną wartość, niezależnie od domknięcia.
   const isBreakRef = useRef(false);
+  // DLACZEGO ref na id interwału: utrzymuje go między renderami bez wywoływania
+  // ponownego renderowania i pozwala go wyczyścić (clearInterval) z dowolnego miejsca.
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -36,9 +81,18 @@ export default function TimerScreen() {
   }, [running]);
 
   const handleTimerEnd = async () => {
+    // Wibracja sukcesu — natychmiastowy, namacalny sygnał końca odliczania,
+    // nawet gdy telefon jest wyciszony lub powiadomienia są odrzucone.
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
     if (!isBreakRef.current) {
       await saveSession();
 
+      // Powiadomienie systemowe (jeśli zgoda) + alert w aplikacji.
+      sendLocalNotification(
+        "Sesja zakończona! 🎉",
+        "Świetna robota! Czas na 5-minutową przerwę."
+      );
       Alert.alert("Sesja zakończona! 🎉", "Świetna robota! Czas na przerwę.", [
         { text: "OK" },
       ]);
@@ -47,6 +101,7 @@ export default function TimerScreen() {
       setIsBreak(true);
       setSeconds(BREAK_SECONDS);
     } else {
+      sendLocalNotification("Przerwa zakończona!", "Czas wracać do nauki. 📚");
       Alert.alert("Przerwa zakończona!", "Czas wracać do nauki.", [
         { text: "OK" },
       ]);
@@ -57,7 +112,14 @@ export default function TimerScreen() {
     }
   };
 
+  const toggleRunning = () => {
+    // Lekka wibracja jako potwierdzenie dotknięcia Start/Pauza.
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setRunning((prev) => !prev);
+  };
+
   const reset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     clearInterval(intervalRef.current);
     setRunning(false);
     isBreakRef.current = false;
@@ -72,14 +134,19 @@ export default function TimerScreen() {
       <Text style={styles.modeLabel}>
         {isBreak ? "☕ Przerwa" : "📚 Nauka"}
       </Text>
-      <Text style={styles.timer}>
+      <Text
+        style={[
+          styles.timer,
+          { fontSize: timerFontSize, marginBottom: isLandscape ? 20 : 40 },
+        ]}
+      >
         {minutes}:{secs}
       </Text>
 
       <View style={styles.btnRow}>
         <TouchableOpacity
           style={[styles.btn, running && styles.btnPause]}
-          onPress={() => setRunning(!running)}
+          onPress={toggleRunning}
         >
           <Text style={styles.btnText}>{running ? "Pauza" : "Start"}</Text>
         </TouchableOpacity>
@@ -105,10 +172,10 @@ const styles = StyleSheet.create({
   },
   modeLabel: { fontSize: 22, color: "#555", marginBottom: 10 },
   timer: {
-    fontSize: 80,
+    // fontSize i marginBottom ustawiane dynamicznie w komponencie
+    // (zależnie od rozmiaru ekranu i orientacji).
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 40,
     fontVariant: ["tabular-nums"],
   },
   btnRow: { flexDirection: "row", gap: 15, marginBottom: 30 },

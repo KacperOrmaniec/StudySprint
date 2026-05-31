@@ -29,6 +29,8 @@ export default function SubjectsScreen() {
   const [editInput, setEditInput] = useState("");
   const [editError, setEditError] = useState("");
 
+  // DLACZEGO useFocusEffect: lista przedmiotów może zostać zmieniona pośrednio
+  // (np. po powrocie z innego ekranu) — przeładowujemy ją przy każdym wejściu.
   useFocusEffect(
     useCallback(() => {
       async function load() {
