@@ -126,15 +126,19 @@ StudySprint2/
 │   ├── navigation/
 │   │   └── AppNavigator.js    # Bottom Tabs + Stack (Zadania → Szczegóły)
 │   ├── screens/              # Ekrany (Home, Subjects, Tasks, TaskDetail, Timer, Stats)
-│   ├── components/
-│   │   └── TaskForm.js       # Współdzielony formularz zadania
+│   ├── components/           # TaskForm, ScreenStatus (loading/error), ErrorBoundary
+│   ├── theme/
+│   │   └── index.js          # Design tokens: colors, spacing, radius, fontSize
 │   ├── logic/                # Czysta logika biznesowa (testowalna)
 │   │   ├── tasksLogic.js
 │   │   ├── subjectsLogic.js
 │   │   ├── timerLogic.js
 │   │   └── statsLogic.js
 │   └── utils/
-│       └── storage.js        # Wrapper na AsyncStorage (save/load)
+│       ├── storage.js        # Wrapper na AsyncStorage (save/load)
+│       └── notifications.js  # Uprawnienia + lokalne powiadomienia
+├── scripts/
+│   └── generate-icons.js     # Generator własnych ikon (SVG → PNG)
 └── __tests__/                # Testy jednostkowe logiki
 ```
 

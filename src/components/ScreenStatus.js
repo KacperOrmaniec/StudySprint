@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { colors } from "../theme";
 
 /**
  * Wspólny widok stanu ekranu: ładowanie (spinner) lub błąd (komunikat + retry).
@@ -20,7 +21,7 @@ export default function ScreenStatus({ loading, error, onRetry }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#4a90e2" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Ładowanie…</Text>
       </View>
     );
@@ -51,21 +52,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 30,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
-  loadingText: { marginTop: 12, color: "#666", fontSize: 15 },
+  loadingText: { marginTop: 12, color: colors.textSecondary, fontSize: 15 },
   errorIcon: { fontSize: 40, marginBottom: 10 },
   errorText: {
-    color: "#666",
+    color: colors.textSecondary,
     fontSize: 15,
     textAlign: "center",
     marginBottom: 18,
   },
   retryBtn: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 10,
   },
-  retryBtnText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  retryBtnText: { color: colors.white, fontWeight: "bold", fontSize: 15 },
 });

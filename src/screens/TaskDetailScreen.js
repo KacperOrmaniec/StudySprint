@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { colors } from "../theme";
 import * as Haptics from "expo-haptics";
 import { PRIORITY_COLORS, getSubjectName } from "../logic/tasksLogic";
 import ScreenStatus from "../components/ScreenStatus";
@@ -58,7 +59,10 @@ export default function TaskDetailScreen({ route, navigation }) {
         <View style={styles.row}>
           <Text style={styles.label}>Status</Text>
           <Text
-            style={[styles.value, { color: task.done ? "#27ae60" : "#f39c12" }]}
+            style={[
+              styles.value,
+              { color: task.done ? colors.success : colors.warning },
+            ]}
           >
             {task.done ? "✓ Ukończone" : "● Aktywne"}
           </Text>
@@ -109,45 +113,60 @@ export default function TaskDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, padding: 20, backgroundColor: colors.background },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
     marginBottom: 20,
   },
-  name: { fontSize: 22, fontWeight: "bold", color: "#333", marginBottom: 16 },
+  name: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.textPrimary,
+    marginBottom: 16,
+  },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: colors.borderSubtle,
   },
-  label: { fontSize: 14, color: "#999" },
-  value: { fontSize: 15, color: "#333", fontWeight: "600" },
-  descLabel: { fontSize: 14, color: "#999", marginTop: 12, marginBottom: 4 },
-  desc: { fontSize: 15, color: "#444", lineHeight: 21 },
+  label: { fontSize: 14, color: colors.textMuted },
+  value: { fontSize: 15, color: colors.textPrimary, fontWeight: "600" },
+  descLabel: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  desc: { fontSize: 15, color: colors.textPrimary, lineHeight: 21 },
   toggleBtn: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 12,
   },
-  toggleBtnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  toggleBtnText: { color: colors.white, fontSize: 16, fontWeight: "bold" },
   deleteBtn: {
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e74c3c",
+    borderColor: colors.danger,
   },
-  deleteBtnText: { color: "#e74c3c", fontSize: 16, fontWeight: "bold" },
-  notFound: { fontSize: 16, color: "#999", textAlign: "center", marginTop: 40 },
+  deleteBtnText: { color: colors.danger, fontSize: 16, fontWeight: "bold" },
+  notFound: {
+    fontSize: 16,
+    color: colors.textMuted,
+    textAlign: "center",
+    marginTop: 40,
+  },
   secondaryBtn: { padding: 14, alignItems: "center", marginTop: 12 },
-  secondaryBtnText: { color: "#4a90e2", fontWeight: "bold" },
+  secondaryBtnText: { color: colors.primary, fontWeight: "bold" },
 });

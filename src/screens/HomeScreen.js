@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { colors } from "../theme";
 import ScreenStatus from "../components/ScreenStatus";
 import { useAppData } from "../context/AppDataContext";
 
@@ -34,11 +35,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, padding: 20, backgroundColor: colors.background },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
     textAlign: "center",
     marginBottom: 15,
   },
@@ -49,14 +50,14 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
     marginHorizontal: 4,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
-  statNum: { fontSize: 26, fontWeight: "bold", color: "#4a90e2" },
-  statLabel: { fontSize: 12, color: "#999", marginTop: 4 },
+  statNum: { fontSize: 26, fontWeight: "bold", color: colors.primary },
+  statLabel: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
 });

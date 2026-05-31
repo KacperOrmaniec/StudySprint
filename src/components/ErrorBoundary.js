@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { colors } from "../theme";
 
 /**
  * Error Boundary — łapie błędy renderowania w drzewie komponentów poniżej i
@@ -55,28 +56,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 30,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
   },
   icon: { fontSize: 56, marginBottom: 12 },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 10,
     textAlign: "center",
   },
   message: {
     fontSize: 15,
-    color: "#666",
+    color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 21,
     marginBottom: 22,
   },
   button: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     paddingHorizontal: 28,
     paddingVertical: 13,
     borderRadius: 10,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  buttonText: { color: colors.white, fontWeight: "bold", fontSize: 15 },
 });

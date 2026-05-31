@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { colors } from "../theme";
 import { PRIORITIES, PRIORITY_COLORS } from "../logic/tasksLogic";
 
 export default function TaskForm({
@@ -62,7 +63,7 @@ export default function TaskForm({
             <Text
               style={[
                 styles.priorityBtnText,
-                formPriority === p && { color: "#fff" },
+                formPriority === p && { color: colors.white },
               ]}
             >
               {p}
@@ -97,7 +98,7 @@ export default function TaskForm({
           </TouchableOpacity>
         ))}
         {subjects.length === 0 && (
-          <Text style={{ color: "#999", paddingVertical: 6 }}>
+          <Text style={{ color: colors.textMuted, paddingVertical: 6 }}>
             Brak przedmiotów (dodaj na ekranie Przedmioty)
           </Text>
         )}
@@ -107,35 +108,43 @@ export default function TaskForm({
 }
 
 const styles = StyleSheet.create({
-  formLabel: { fontSize: 14, color: "#666", marginBottom: 5, marginTop: 10 },
+  formLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 5,
+    marginTop: 10,
+  },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     borderRadius: 8,
     padding: 10,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
-  error: { color: "#e74c3c", fontSize: 13, marginTop: 3 },
+  error: { color: colors.danger, fontSize: 13, marginTop: 3 },
   priorityRow: { flexDirection: "row", gap: 8, marginBottom: 5 },
   priorityBtn: {
     flex: 1,
     padding: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     alignItems: "center",
   },
-  priorityBtnText: { color: "#666", fontSize: 13 },
+  priorityBtnText: { color: colors.textSecondary, fontSize: 13 },
   chipBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     marginRight: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
-  chipBtnActive: { backgroundColor: "#4a90e2", borderColor: "#4a90e2" },
-  chipBtnText: { color: "#666", fontSize: 13 },
-  chipBtnTextActive: { color: "#fff" },
+  chipBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipBtnText: { color: colors.textSecondary, fontSize: 13 },
+  chipBtnTextActive: { color: colors.white },
 });

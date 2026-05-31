@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import { colors } from "../theme";
 import {
   calcTotalSessions,
   calcTotalMinutes,
@@ -61,11 +62,11 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, padding: 20, backgroundColor: colors.background },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 20,
   },
   cardsRow: {
@@ -75,33 +76,38 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
     marginHorizontal: 4,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
-  cardNum: { fontSize: 28, fontWeight: "bold", color: "#4a90e2" },
-  cardLabel: { fontSize: 11, color: "#999", marginTop: 4, textAlign: "center" },
+  cardNum: { fontSize: 28, fontWeight: "bold", color: colors.primary },
+  cardLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 4,
+    textAlign: "center",
+  },
   sectionTitle: {
     fontSize: 17,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
     marginBottom: 10,
   },
   subjectRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     padding: 14,
     borderRadius: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
-  subjectName: { flex: 1, fontSize: 15, color: "#333" },
-  subjectStat: { fontSize: 15, fontWeight: "bold", color: "#4a90e2" },
-  empty: { textAlign: "center", color: "#999", marginTop: 10 },
+  subjectName: { flex: 1, fontSize: 15, color: colors.textPrimary },
+  subjectStat: { fontSize: 15, fontWeight: "bold", color: colors.primary },
+  empty: { textAlign: "center", color: colors.textMuted, marginTop: 10 },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { colors } from "../theme";
 import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import {
@@ -20,6 +21,59 @@ import {
 import TaskForm from "../components/TaskForm";
 import ScreenStatus from "../components/ScreenStatus";
 import { useAppData } from "../context/AppDataContext";
+
+/**
+ * Pojedynczy wiersz listy zadań. DLACZEGO `React.memo`: przy długiej liście i
+ * zmianie stanu LOKALNEGO ekranu (np. wpisywanie w formularzu, zmiana filtra)
+ * niezmienione wiersze nie renderują się ponownie — porównanie propsów odcina
+ * zbędne re-rendery. Działa, bo `subjectName` to string, a callbacki są
+ * stabilizowane przez `useCallback` w rodzicu.
+ */
+const TaskRow = React.memo(function TaskRow({
+  item,
+  subjectName,
+  onToggle,
+  onPress,
+  onEdit,
+  onDelete,
+}) {
+  return (
+    <View style={[styles.taskCard, item.done && styles.taskCardDone]}>
+      <TouchableOpacity
+        style={styles.checkbox}
+        onPress={() => onToggle(item.id)}
+      >
+        <Text style={styles.checkboxText}>{item.done ? "✓" : " "}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.taskInfo}
+        onPress={() => onPress(item.id)}
+      >
+        <Text style={[styles.taskName, item.done && styles.taskNameDone]}>
+          {item.name}
+        </Text>
+        <Text style={styles.taskMeta}>
+          {subjectName} •{" "}
+          <Text style={{ color: PRIORITY_COLORS[item.priority] }}>
+            {item.priority}
+          </Text>
+        </Text>
+        {item.description ? (
+          <Text style={styles.taskDesc}>{item.description}</Text>
+        ) : null}
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onEdit(item)} style={styles.iconBtn}>
+        <Text style={{ fontSize: 18 }}>✏️</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => onDelete(item.id)}
+        style={styles.iconBtn}
+      >
+        <Text style={{ fontSize: 18 }}>🗑️</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
 
 export default function TasksScreen() {
   const navigation = useNavigation();
@@ -76,7 +130,9 @@ export default function TasksScreen() {
     setAddModal(false);
   };
 
-  const openEdit = (task) => {
+  // useCallback, by referencje handlerów były stabilne między renderami —
+  // dzięki temu zmemoizowane wiersze (TaskRow) nie renderują się bez potrzeby.
+  const openEdit = useCallback((task) => {
     setEditTaskItem(task);
     setFormName(task.name);
     setFormDesc(task.description);
@@ -84,7 +140,7 @@ export default function TasksScreen() {
     setFormSubjectId(task.subjectId);
     setFormError("");
     setEditModal(true);
-  };
+  }, []);
 
   const handleSaveEdit = () => {
     const err = validateTaskName(formName);
@@ -101,23 +157,48 @@ export default function TasksScreen() {
     setEditModal(false);
   };
 
-  const handleDelete = (id) => {
-    // Wibracja ostrzegawcza przy usuwaniu — wyraźniejszy sygnał akcji niszczącej.
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    removeTask(id);
-  };
+  const handleDelete = useCallback(
+    (id) => {
+      // Wibracja ostrzegawcza przy usuwaniu — wyraźniejszy sygnał akcji niszczącej.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      removeTask(id);
+    },
+    [removeTask]
+  );
 
-  const handleToggleDone = (id) => {
-    // Lekka wibracja potwierdzająca zaznaczenie/odznaczenie zadania.
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    toggleTask(id);
-  };
+  const handleToggleDone = useCallback(
+    (id) => {
+      // Lekka wibracja potwierdzająca zaznaczenie/odznaczenie zadania.
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      toggleTask(id);
+    },
+    [toggleTask]
+  );
 
-  const filteredTasks = filterAndSortTasks(
-    tasks,
-    subjectFilter,
-    statusFilter,
-    sortBy
+  const openDetail = useCallback(
+    (id) => navigation.navigate("TaskDetail", { taskId: id }),
+    [navigation]
+  );
+
+  // useMemo: filtrowanie i sortowanie przeliczamy tylko gdy zmienią się zadania
+  // lub kryteria — a nie przy każdym renderze (np. po wpisaniu znaku w formularzu).
+  const filteredTasks = useMemo(
+    () => filterAndSortTasks(tasks, subjectFilter, statusFilter, sortBy),
+    [tasks, subjectFilter, statusFilter, sortBy]
+  );
+
+  const renderItem = useCallback(
+    ({ item }) => (
+      <TaskRow
+        item={item}
+        subjectName={getSubjectName(subjects, item.subjectId)}
+        onToggle={handleToggleDone}
+        onPress={openDetail}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+      />
+    ),
+    [subjects, handleToggleDone, openDetail, openEdit, handleDelete]
   );
 
   if (loading) return <ScreenStatus loading />;
@@ -230,47 +311,13 @@ export default function TasksScreen() {
         data={filteredTasks}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 80 }}
-        renderItem={({ item }) => (
-          <View style={[styles.taskCard, item.done && styles.taskCardDone]}>
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => handleToggleDone(item.id)}
-            >
-              <Text style={styles.checkboxText}>{item.done ? "✓" : " "}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.taskInfo}
-              onPress={() =>
-                navigation.navigate("TaskDetail", { taskId: item.id })
-              }
-            >
-              <Text style={[styles.taskName, item.done && styles.taskNameDone]}>
-                {item.name}
-              </Text>
-              <Text style={styles.taskMeta}>
-                {getSubjectName(subjects, item.subjectId)} •{" "}
-                <Text style={{ color: PRIORITY_COLORS[item.priority] }}>
-                  {item.priority}
-                </Text>
-              </Text>
-              {item.description ? (
-                <Text style={styles.taskDesc}>{item.description}</Text>
-              ) : null}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => openEdit(item)}
-              style={styles.iconBtn}
-            >
-              <Text style={{ fontSize: 18 }}>✏️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleDelete(item.id)}
-              style={styles.iconBtn}
-            >
-              <Text style={{ fontSize: 18 }}>🗑️</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        renderItem={renderItem}
+        // Optymalizacje długiej listy: ograniczają liczbę jednocześnie
+        // renderowanych i utrzymywanych w pamięci wierszy.
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={11}
+        removeClippedSubviews
         ListEmptyComponent={<Text style={styles.empty}>Brak zadań.</Text>}
       />
 
@@ -353,7 +400,7 @@ export default function TasksScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, backgroundColor: colors.background },
   filterRow: { paddingHorizontal: 15, paddingVertical: 10, maxHeight: 55 },
   statusRow: {
     flexDirection: "row",
@@ -366,87 +413,98 @@ const styles = StyleSheet.create({
     padding: 6,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
-  statusBtnActive: { backgroundColor: "#4a90e2", borderColor: "#4a90e2" },
-  statusBtnText: { color: "#666", fontSize: 13 },
-  statusBtnTextActive: { color: "#fff" },
+  statusBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  statusBtnText: { color: colors.textSecondary, fontSize: 13 },
+  statusBtnTextActive: { color: colors.white },
   sortRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
     marginBottom: 10,
   },
-  sortLabel: { color: "#666", marginRight: 8 },
+  sortLabel: { color: colors.textSecondary, marginRight: 8 },
   sortBtn: {
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     marginRight: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
-  sortBtnActive: { backgroundColor: "#4a90e2", borderColor: "#4a90e2" },
-  sortBtnText: { color: "#666", fontSize: 13 },
-  sortBtnTextActive: { color: "#fff" },
+  sortBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  sortBtnText: { color: colors.textSecondary, fontSize: 13 },
+  sortBtnTextActive: { color: colors.white },
   taskCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: colors.border,
   },
   taskCardDone: { opacity: 0.55 },
   checkbox: {
     width: 28,
     height: 28,
     borderWidth: 2,
-    borderColor: "#4a90e2",
+    borderColor: colors.primary,
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
     marginTop: 1,
   },
-  checkboxText: { color: "#4a90e2", fontWeight: "bold", fontSize: 16 },
+  checkboxText: { color: colors.primary, fontWeight: "bold", fontSize: 16 },
   taskInfo: { flex: 1 },
-  taskName: { fontSize: 15, fontWeight: "bold", color: "#333" },
-  taskNameDone: { textDecorationLine: "line-through", color: "#aaa" },
-  taskMeta: { fontSize: 12, color: "#999", marginTop: 2 },
-  taskDesc: { fontSize: 13, color: "#666", marginTop: 3 },
+  taskName: { fontSize: 15, fontWeight: "bold", color: colors.textPrimary },
+  taskNameDone: { textDecorationLine: "line-through", color: colors.textFaint },
+  taskMeta: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  taskDesc: { fontSize: 13, color: colors.textSecondary, marginTop: 3 },
   iconBtn: { padding: 4 },
-  empty: { textAlign: "center", color: "#999", marginTop: 40, fontSize: 16 },
+  empty: {
+    textAlign: "center",
+    color: colors.textMuted,
+    marginTop: 40,
+    fontSize: 16,
+  },
   fab: {
     position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-  fabText: { color: "#fff", fontSize: 30, lineHeight: 32 },
+  fabText: { color: colors.white, fontSize: 30, lineHeight: 32 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: colors.overlay,
     justifyContent: "center",
     padding: 20,
   },
   modalBox: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 12,
     padding: 20,
     maxHeight: "88%",
@@ -455,20 +513,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 12,
-    color: "#333",
+    color: colors.textPrimary,
   },
   chipBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
     marginRight: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
   },
-  chipBtnActive: { backgroundColor: "#4a90e2", borderColor: "#4a90e2" },
-  chipBtnText: { color: "#666", fontSize: 13 },
-  chipBtnTextActive: { color: "#fff" },
+  chipBtnActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipBtnText: { color: colors.textSecondary, fontSize: 13 },
+  chipBtnTextActive: { color: colors.white },
   modalBtns: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -479,14 +540,14 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderInput,
   },
-  cancelBtnText: { color: "#666" },
+  cancelBtnText: { color: colors.textSecondary },
   saveBtn: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     padding: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  saveBtnText: { color: "#fff", fontWeight: "bold" },
+  saveBtnText: { color: colors.white, fontWeight: "bold" },
 });

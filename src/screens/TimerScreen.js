@@ -7,6 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
+import { colors } from "../theme";
 import * as Haptics from "expo-haptics";
 import { STUDY_SECONDS, BREAK_SECONDS, formatTime } from "../logic/timerLogic";
 import {
@@ -173,26 +174,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.background,
     padding: 30,
   },
-  modeLabel: { fontSize: 22, color: "#555", marginBottom: 10 },
+  modeLabel: { fontSize: 22, color: colors.textSecondary, marginBottom: 10 },
   timer: {
     // fontSize i marginBottom ustawiane dynamicznie w komponencie
     // (zależnie od rozmiaru ekranu i orientacji).
     fontWeight: "bold",
-    color: "#333",
+    color: colors.textPrimary,
     fontVariant: ["tabular-nums"],
   },
   btnRow: { flexDirection: "row", gap: 15, marginBottom: 30 },
   btn: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: colors.primary,
     paddingHorizontal: 35,
     paddingVertical: 15,
     borderRadius: 12,
   },
-  btnPause: { backgroundColor: "#f39c12" },
-  btnReset: { backgroundColor: "#aaa" },
-  btnText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  hint: { fontSize: 14, color: "#999" },
+  btnPause: { backgroundColor: colors.warning },
+  btnReset: { backgroundColor: colors.textFaint },
+  btnText: { color: colors.white, fontSize: 18, fontWeight: "bold" },
+  hint: { fontSize: 14, color: colors.textMuted },
 });

@@ -1,5 +1,6 @@
 import React from "react";
 import { Text } from "react-native";
+import { colors } from "../theme";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -20,8 +21,8 @@ function TasksStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: "#4a90e2" },
-        headerTintColor: "#fff",
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: colors.white,
         headerTitleStyle: { fontWeight: "bold" },
       }}
     >
@@ -44,10 +45,10 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: "#4a90e2",
-          tabBarInactiveTintColor: "#999",
-          headerStyle: { backgroundColor: "#4a90e2" },
-          headerTintColor: "#fff",
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textMuted,
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: "bold" },
         }}
       >
