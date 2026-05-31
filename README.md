@@ -26,15 +26,15 @@ po ponownym uruchomieniu aplikacji — również offline.
 
 ## 🛠️ Użyte technologie
 
-| Obszar         | Technologia                                 |
-| -------------- | ------------------------------------------- |
-| Framework      | React Native `0.81.5` + Expo `~54`          |
-| Język          | JavaScript (React `19.1`)                   |
-| Stan globalny  | Context API (`AppDataContext`)              |
+| Obszar         | Technologia                                   |
+| -------------- | --------------------------------------------- |
+| Framework      | React Native `0.81.5` + Expo `~54`            |
+| Język          | JavaScript (React `19.1`)                     |
+| Stan globalny  | Context API (`AppDataContext`)                |
 | Nawigacja      | React Navigation – Bottom Tabs + Native Stack |
-| Przechowywanie | `@react-native-async-storage/async-storage` |
-| Testy          | Jest + `jest-expo`                          |
-| Jakość kodu    | ESLint 9 (`eslint-config-expo`) + Prettier  |
+| Przechowywanie | `@react-native-async-storage/async-storage`   |
+| Testy          | Jest + `jest-expo`                            |
+| Jakość kodu    | ESLint 9 (`eslint-config-expo`) + Prettier    |
 
 ---
 
@@ -75,6 +75,42 @@ przedmiotów, timera i statystyk.
 
 ```bash
 npm test
+```
+
+Sprawdzenie jakości kodu:
+
+```bash
+npm run lint     # ESLint
+npm run format   # Prettier
+```
+
+---
+
+## 📦 Budowanie aplikacji (EAS Build)
+
+Konfiguracja buildów znajduje się w [`eas.json`](./eas.json). Profil `preview`
+tworzy instalowalny plik **`.apk`** dla Androida.
+
+```bash
+# 1. Zainstaluj EAS CLI i zaloguj się na konto Expo
+npm install -g eas-cli
+eas login
+
+# 2. (jednorazowo) powiąż projekt z kontem – doda projectId do app.json
+eas init
+
+# 3. Zbuduj plik APK (profil preview)
+eas build --platform android --profile preview
+```
+
+Po zakończeniu EAS zwraca **link do pobrania `.apk`** (build wykonuje się w chmurze
+Expo). Plik można zainstalować bezpośrednio na urządzeniu z Androidem.
+
+Konfiguracja aplikacji (nazwa, **własna ikona**, splash screen, `package`) jest
+w [`app.json`](./app.json). Ikony można wygenerować ponownie skryptem:
+
+```bash
+node scripts/generate-icons.js
 ```
 
 ---
