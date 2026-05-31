@@ -8,18 +8,18 @@ import {
   useWindowDimensions,
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import {
-  STUDY_SECONDS,
-  BREAK_SECONDS,
-  formatTime,
-  saveSession,
-} from "../logic/timerLogic";
+import { STUDY_SECONDS, BREAK_SECONDS, formatTime } from "../logic/timerLogic";
 import {
   requestNotificationPermission,
   sendLocalNotification,
 } from "../utils/notifications";
+import { useAppData } from "../context/AppDataContext";
 
 export default function TimerScreen() {
+  // Zapis sesji idzie do globalnego stanu (Statystyki/Główna od razu to widzą).
+  const { addSession } = useAppData();
+
+  // Stan LOKALNY timera (odliczanie, tryb, działanie) — dotyczy tylko tego ekranu.
   const [seconds, setSeconds] = useState(STUDY_SECONDS);
   const [running, setRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
@@ -59,6 +59,10 @@ export default function TimerScreen() {
   // DLACZEGO ref na id interwału: utrzymuje go między renderami bez wywoływania
   // ponownego renderowania i pozwala go wyczyścić (clearInterval) z dowolnego miejsca.
   const intervalRef = useRef(null);
+  // DLACZEGO ref na handler końca: interwał ma zależeć tylko od `running`, więc
+  // wywołuje zawsze NAJNOWSZą wersję handleTimerEnd przez ref — bez restartu
+  // odliczania, gdy zmieni się np. akcja addSession z kontekstu.
+  const handleTimerEndRef = useRef(null);
 
   useEffect(() => {
     if (running) {
@@ -67,7 +71,7 @@ export default function TimerScreen() {
           if (prev <= 1) {
             clearInterval(intervalRef.current);
             setRunning(false);
-            handleTimerEnd();
+            handleTimerEndRef.current();
             return 0;
           }
           return prev - 1;
@@ -80,13 +84,13 @@ export default function TimerScreen() {
     return () => clearInterval(intervalRef.current);
   }, [running]);
 
-  const handleTimerEnd = async () => {
+  const handleTimerEnd = () => {
     // Wibracja sukcesu — natychmiastowy, namacalny sygnał końca odliczania,
     // nawet gdy telefon jest wyciszony lub powiadomienia są odrzucone.
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     if (!isBreakRef.current) {
-      await saveSession();
+      addSession();
 
       // Powiadomienie systemowe (jeśli zgoda) + alert w aplikacji.
       sendLocalNotification(
@@ -111,6 +115,8 @@ export default function TimerScreen() {
       setSeconds(STUDY_SECONDS);
     }
   };
+  // Trzymamy najnowszą wersję handlera w refie (czytaną przez interwał powyżej).
+  handleTimerEndRef.current = handleTimerEnd;
 
   const toggleRunning = () => {
     // Lekka wibracja jako potwierdzenie dotknięcia Start/Pauza.

@@ -1,71 +1,40 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
-import { loadData } from "../utils/storage";
-import {
-  PRIORITY_COLORS,
-  toggleTaskDone,
-  deleteTask,
-  getSubjectName,
-  loadTasks,
-  persistTasks,
-} from "../logic/tasksLogic";
+import { PRIORITY_COLORS, getSubjectName } from "../logic/tasksLogic";
 import ScreenStatus from "../components/ScreenStatus";
+import { useAppData } from "../context/AppDataContext";
 
 /**
  * Ekran szczegółów zadania — drugi typ nawigacji (Stack) zagnieżdżony w zakładce
  * „Zadania". DLACZEGO przez `route.params` (a nie modal): demonstruje przekazanie
  * parametru (`taskId`) między ekranami routera i pełnoekranowy widok z własnym
  * nagłówkiem i przyciskiem wstecz.
+ *
+ * Dane czyta z globalnego stanu — po zmianie (toggle/usuń) ekran aktualizuje się
+ * automatycznie, bo zadanie pochodzi z tej samej kolekcji co lista.
  */
 export default function TaskDetailScreen({ route, navigation }) {
   const { taskId } = route.params;
+  const { tasks, subjects, loading, error, reload, toggleTask, removeTask } =
+    useAppData();
 
-  const [task, setTask] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const task = tasks.find((t) => t.id === taskId) || null;
 
-  const load = useCallback(async () => {
-    try {
-      setError(false);
-      setLoading(true);
-      const tasks = await loadTasks();
-      const subs = (await loadData("subjects")) || [];
-      setSubjects(subs);
-      setTask(tasks.find((t) => t.id === taskId) || null);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [taskId]);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
-
-  const handleToggle = async () => {
+  const handleToggle = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const tasks = await loadTasks();
-    const updated = toggleTaskDone(tasks, taskId);
-    await persistTasks(updated);
-    setTask(updated.find((t) => t.id === taskId) || null);
+    toggleTask(taskId);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    const tasks = await loadTasks();
-    await persistTasks(deleteTask(tasks, taskId));
-    // Wracamy do listy — odświeży się sama dzięki useFocusEffect.
+    removeTask(taskId);
+    // Wracamy do listy — lista czyta ten sam globalny stan, więc jest aktualna.
     navigation.goBack();
   };
 
   if (loading) return <ScreenStatus loading />;
-  if (error) return <ScreenStatus error onRetry={load} />;
+  if (error) return <ScreenStatus error onRetry={reload} />;
 
   if (!task) {
     return (

@@ -1,7 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { loadData } from "../utils/storage";
 import {
   calcTotalSessions,
   calcTotalMinutes,
@@ -9,39 +7,12 @@ import {
   calcSubjectStats,
 } from "../logic/statsLogic";
 import ScreenStatus from "../components/ScreenStatus";
+import { useAppData } from "../context/AppDataContext";
 
 export default function StatsScreen() {
-  const [sessions, setSessions] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  // DLACZEGO useFocusEffect: statystyki muszą odświeżać się po każdej zmianie
-  // danych na innych zakładkach (nowa sesja, ukończone zadanie), a nie tylko
-  // przy pierwszym montażu ekranu.
-  const load = useCallback(async () => {
-    try {
-      setError(false);
-      setLoading(true);
-      const sess = await loadData("sessions");
-      const t = await loadData("tasks");
-      const s = await loadData("subjects");
-      setSessions(sess || []);
-      setTasks(t || []);
-      setSubjects(s || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
+  // Statystyki liczone z globalnego stanu — aktualizują się natychmiast po
+  // zmianie zadań/sesji na innych ekranach (wspólne źródło danych).
+  const { sessions, tasks, subjects, loading, error, reload } = useAppData();
 
   const totalSessions = calcTotalSessions(sessions);
   const totalMinutes = calcTotalMinutes(sessions);
@@ -49,7 +20,7 @@ export default function StatsScreen() {
   const subjectStats = calcSubjectStats(subjects, tasks);
 
   if (loading) return <ScreenStatus loading />;
-  if (error) return <ScreenStatus error onRetry={load} />;
+  if (error) return <ScreenStatus error onRetry={reload} />;
 
   return (
     <View style={styles.container}>

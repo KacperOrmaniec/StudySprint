@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,31 +8,36 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
-import { loadData } from "../utils/storage";
 import {
   PRIORITY_COLORS,
   STATUS_FILTERS,
   validateTaskName,
-  createTask,
-  editTask,
-  deleteTask,
-  toggleTaskDone,
   filterAndSortTasks,
   getSubjectName,
-  loadTasks,
-  persistTasks,
 } from "../logic/tasksLogic";
 import TaskForm from "../components/TaskForm";
 import ScreenStatus from "../components/ScreenStatus";
+import { useAppData } from "../context/AppDataContext";
 
 export default function TasksScreen() {
   const navigation = useNavigation();
 
-  const [tasks, setTasks] = useState([]);
-  const [subjects, setSubjects] = useState([]);
+  // Dane i akcje CRUD z globalnego stanu (jedno źródło prawdy).
+  const {
+    tasks,
+    subjects,
+    loading,
+    error,
+    reload,
+    addTask,
+    updateTask,
+    removeTask,
+    toggleTask,
+  } = useAppData();
 
+  // Stan LOKALNY: filtry, sortowanie, modale i pola formularza — tylko ten ekran.
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("Wszystkie");
   const [sortBy, setSortBy] = useState("data");
@@ -47,37 +52,6 @@ export default function TasksScreen() {
   const [formSubjectId, setFormSubjectId] = useState(null);
   const [formError, setFormError] = useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-
-  // DLACZEGO useFocusEffect: przedmioty (do filtrów i formularza) mogą zostać
-  // dodane na zakładce „Przedmioty" — odświeżamy zadania i przedmioty po wejściu.
-  const load = useCallback(async () => {
-    try {
-      setLoadError(false);
-      setLoading(true);
-      const t = await loadTasks();
-      const s = await loadData("subjects");
-      setTasks(t);
-      setSubjects(s || []);
-    } catch {
-      setLoadError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
-
-  const updateTasks = (updated) => {
-    setTasks(updated);
-    persistTasks(updated);
-  };
-
   const openAdd = () => {
     setFormName("");
     setFormDesc("");
@@ -88,20 +62,17 @@ export default function TasksScreen() {
   };
 
   const handleAdd = () => {
-    const error = validateTaskName(formName);
-    if (error) {
-      setFormError(error);
+    const err = validateTaskName(formName);
+    if (err) {
+      setFormError(err);
       return;
     }
-    updateTasks([
-      ...tasks,
-      createTask({
-        name: formName,
-        description: formDesc,
-        priority: formPriority,
-        subjectId: formSubjectId,
-      }),
-    ]);
+    addTask({
+      name: formName,
+      description: formDesc,
+      priority: formPriority,
+      subjectId: formSubjectId,
+    });
     setAddModal(false);
   };
 
@@ -116,32 +87,30 @@ export default function TasksScreen() {
   };
 
   const handleSaveEdit = () => {
-    const error = validateTaskName(formName);
-    if (error) {
-      setFormError(error);
+    const err = validateTaskName(formName);
+    if (err) {
+      setFormError(err);
       return;
     }
-    updateTasks(
-      editTask(tasks, editTaskItem.id, {
-        name: formName,
-        description: formDesc,
-        priority: formPriority,
-        subjectId: formSubjectId,
-      })
-    );
+    updateTask(editTaskItem.id, {
+      name: formName,
+      description: formDesc,
+      priority: formPriority,
+      subjectId: formSubjectId,
+    });
     setEditModal(false);
   };
 
   const handleDelete = (id) => {
     // Wibracja ostrzegawcza przy usuwaniu — wyraźniejszy sygnał akcji niszczącej.
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    updateTasks(deleteTask(tasks, id));
+    removeTask(id);
   };
 
   const handleToggleDone = (id) => {
     // Lekka wibracja potwierdzająca zaznaczenie/odznaczenie zadania.
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    updateTasks(toggleTaskDone(tasks, id));
+    toggleTask(id);
   };
 
   const filteredTasks = filterAndSortTasks(
@@ -152,7 +121,7 @@ export default function TasksScreen() {
   );
 
   if (loading) return <ScreenStatus loading />;
-  if (loadError) return <ScreenStatus error onRetry={load} />;
+  if (error) return <ScreenStatus error onRetry={reload} />;
 
   return (
     <View style={styles.container}>

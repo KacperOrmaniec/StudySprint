@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,22 +8,23 @@ import {
   Modal,
   StyleSheet,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import {
-  validateSubjectName,
-  addSubject,
-  editSubject,
-  deleteSubject,
-  loadSubjects,
-  persistSubjects,
-} from "../logic/subjectsLogic";
+import { validateSubjectName } from "../logic/subjectsLogic";
 import ScreenStatus from "../components/ScreenStatus";
+import { useAppData } from "../context/AppDataContext";
 
 export default function SubjectsScreen() {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  // Lista przedmiotów i akcje CRUD pochodzą z globalnego stanu.
+  const {
+    subjects,
+    loading,
+    error,
+    reload,
+    createSubject,
+    updateSubject,
+    removeSubject,
+  } = useAppData();
 
+  // Stan LOKALNY: pola formularzy i widoczność modala — dotyczą tylko tego ekranu.
   const [input, setInput] = useState("");
   const [inputError, setInputError] = useState("");
 
@@ -32,39 +33,13 @@ export default function SubjectsScreen() {
   const [editInput, setEditInput] = useState("");
   const [editError, setEditError] = useState("");
 
-  // DLACZEGO useFocusEffect: lista przedmiotów może zostać zmieniona pośrednio
-  // (np. po powrocie z innego ekranu) — przeładowujemy ją przy każdym wejściu.
-  const load = useCallback(async () => {
-    try {
-      setError(false);
-      setLoading(true);
-      const s = await loadSubjects();
-      setSubjects(s);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
-
-  const updateSubjects = (updated) => {
-    setSubjects(updated);
-    persistSubjects(updated);
-  };
-
   const handleAdd = () => {
-    const error = validateSubjectName(input);
-    if (error) {
-      setInputError(error);
+    const err = validateSubjectName(input);
+    if (err) {
+      setInputError(err);
       return;
     }
-    updateSubjects(addSubject(subjects, input));
+    createSubject(input);
     setInput("");
     setInputError("");
   };
@@ -77,22 +52,22 @@ export default function SubjectsScreen() {
   };
 
   const handleSaveEdit = () => {
-    const error = validateSubjectName(editInput);
-    if (error) {
-      setEditError(error);
+    const err = validateSubjectName(editInput);
+    if (err) {
+      setEditError(err);
       return;
     }
-    updateSubjects(editSubject(subjects, editSubjectItem.id, editInput));
+    updateSubject(editSubjectItem.id, editInput);
     setEditModal(false);
     setEditSubjectItem(null);
   };
 
   const handleDelete = (id) => {
-    updateSubjects(deleteSubject(subjects, id));
+    removeSubject(id);
   };
 
   if (loading) return <ScreenStatus loading />;
-  if (error) return <ScreenStatus error onRetry={load} />;
+  if (error) return <ScreenStatus error onRetry={reload} />;
 
   return (
     <View style={styles.container}>

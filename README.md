@@ -30,6 +30,7 @@ po ponownym uruchomieniu aplikacji — również offline.
 | -------------- | ------------------------------------------- |
 | Framework      | React Native `0.81.5` + Expo `~54`          |
 | Język          | JavaScript (React `19.1`)                   |
+| Stan globalny  | Context API (`AppDataContext`)              |
 | Nawigacja      | React Navigation – Bottom Tabs + Native Stack |
 | Przechowywanie | `@react-native-async-storage/async-storage` |
 | Testy          | Jest + `jest-expo`                          |
@@ -84,6 +85,8 @@ npm test
 StudySprint2/
 ├── App.js                    # Punkt wejścia – SafeAreaProvider + nawigacja
 ├── src/
+│   ├── context/
+│   │   └── AppDataContext.js  # Globalny stan (Context API): przedmioty/zadania/sesje
 │   ├── navigation/
 │   │   └── AppNavigator.js    # Bottom Tabs + Stack (Zadania → Szczegóły)
 │   ├── screens/              # Ekrany (Home, Subjects, Tasks, TaskDetail, Timer, Stats)
@@ -103,6 +106,11 @@ StudySprint2/
 formatowanie czasu, obliczanie statystyk) jest wydzielona z komponentów do
 modułów `src/logic/`. Dzięki temu jest w pełni testowalna bez renderowania UI,
 a komponenty ekranów pozostają cienką warstwą prezentacji + stanu lokalnego.
+
+**Zarządzanie stanem:** globalne dane (przedmioty, zadania, sesje) żyją w jednym
+**Context API** (`AppDataContext`) — to jedno źródło prawdy współdzielone przez
+ekrany, z zapisem do AsyncStorage w warstwie kontekstu. Stan lokalny (modale,
+pola formularzy, filtry, odliczanie timera) pozostaje w `useState` w ekranach.
 
 ---
 
