@@ -19,7 +19,10 @@ export const loadData = async (key) => {
     if (json == null) return null;
     return JSON.parse(json);
   } catch (e) {
+    // DLACZEGO ponownie rzucamy błąd zamiast zwracać null: ekran musi móc
+    // odróżnić „brak danych" od realnej awarii odczytu, żeby pokazać stan
+    // błędu z opcją ponowienia (a nie udawać, że jest pusto).
     console.warn("loadData error:", e);
-    return null;
+    throw e;
   }
 };

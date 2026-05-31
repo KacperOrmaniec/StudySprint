@@ -3,31 +3,47 @@ import { View, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { loadData } from "../utils/storage";
 import { loadSubjects } from "../logic/subjectsLogic";
+import ScreenStatus from "../components/ScreenStatus";
 
 export default function HomeScreen() {
   const [subjects, setSubjects] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [tasks, setTasks] = useState([]);
+  // Trzy stany operacji asynchronicznej: loading → success → error.
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   // DLACZEGO useFocusEffect, a nie useEffect: dane (sesje, zadania, przedmioty)
   // zmieniają się na innych zakładkach i są trzymane w AsyncStorage. useEffect
   // odpaliłby się tylko raz przy montażu, więc statystyki byłyby nieaktualne.
   // useFocusEffect przeładowuje je za każdym wejściem na ten ekran.
+  const load = useCallback(async () => {
+    try {
+      setError(false);
+      setLoading(true);
+      const s = await loadSubjects();
+      const sess = await loadData("sessions");
+      const t = await loadData("tasks");
+      setSubjects(s);
+      setSessions(sess || []);
+      setTasks(t || []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      async function load() {
-        const s = await loadSubjects();
-        const sess = await loadData("sessions");
-        const t = await loadData("tasks");
-        setSubjects(s);
-        setSessions(sess || []);
-        setTasks(t || []);
-      }
       load();
-    }, [])
+    }, [load])
   );
 
   const doneTasks = tasks.filter((t) => t.done).length;
+
+  if (loading) return <ScreenStatus loading />;
+  if (error) return <ScreenStatus error onRetry={load} />;
 
   return (
     <View style={styles.container}>

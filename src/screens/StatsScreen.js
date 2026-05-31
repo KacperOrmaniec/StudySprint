@@ -8,33 +8,48 @@ import {
   calcDoneTasks,
   calcSubjectStats,
 } from "../logic/statsLogic";
+import ScreenStatus from "../components/ScreenStatus";
 
 export default function StatsScreen() {
   const [sessions, setSessions] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   // DLACZEGO useFocusEffect: statystyki muszą odświeżać się po każdej zmianie
   // danych na innych zakładkach (nowa sesja, ukończone zadanie), a nie tylko
   // przy pierwszym montażu ekranu.
+  const load = useCallback(async () => {
+    try {
+      setError(false);
+      setLoading(true);
+      const sess = await loadData("sessions");
+      const t = await loadData("tasks");
+      const s = await loadData("subjects");
+      setSessions(sess || []);
+      setTasks(t || []);
+      setSubjects(s || []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      async function load() {
-        const sess = await loadData("sessions");
-        const t = await loadData("tasks");
-        const s = await loadData("subjects");
-        setSessions(sess || []);
-        setTasks(t || []);
-        setSubjects(s || []);
-      }
       load();
-    }, [])
+    }, [load])
   );
 
   const totalSessions = calcTotalSessions(sessions);
   const totalMinutes = calcTotalMinutes(sessions);
   const doneTasks = calcDoneTasks(tasks);
   const subjectStats = calcSubjectStats(subjects, tasks);
+
+  if (loading) return <ScreenStatus loading />;
+  if (error) return <ScreenStatus error onRetry={load} />;
 
   return (
     <View style={styles.container}>

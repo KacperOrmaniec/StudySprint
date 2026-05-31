@@ -17,9 +17,12 @@ import {
   loadSubjects,
   persistSubjects,
 } from "../logic/subjectsLogic";
+import ScreenStatus from "../components/ScreenStatus";
 
 export default function SubjectsScreen() {
   const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const [input, setInput] = useState("");
   const [inputError, setInputError] = useState("");
@@ -31,14 +34,23 @@ export default function SubjectsScreen() {
 
   // DLACZEGO useFocusEffect: lista przedmiotów może zostać zmieniona pośrednio
   // (np. po powrocie z innego ekranu) — przeładowujemy ją przy każdym wejściu.
+  const load = useCallback(async () => {
+    try {
+      setError(false);
+      setLoading(true);
+      const s = await loadSubjects();
+      setSubjects(s);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      async function load() {
-        const s = await loadSubjects();
-        setSubjects(s);
-      }
       load();
-    }, [])
+    }, [load])
   );
 
   const updateSubjects = (updated) => {
@@ -78,6 +90,9 @@ export default function SubjectsScreen() {
   const handleDelete = (id) => {
     updateSubjects(deleteSubject(subjects, id));
   };
+
+  if (loading) return <ScreenStatus loading />;
+  if (error) return <ScreenStatus error onRetry={load} />;
 
   return (
     <View style={styles.container}>

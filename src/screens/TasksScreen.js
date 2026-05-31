@@ -25,6 +25,7 @@ import {
   persistTasks,
 } from "../logic/tasksLogic";
 import TaskForm from "../components/TaskForm";
+import ScreenStatus from "../components/ScreenStatus";
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState([]);
@@ -44,18 +45,30 @@ export default function TasksScreen() {
   const [formSubjectId, setFormSubjectId] = useState(null);
   const [formError, setFormError] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
   // DLACZEGO useFocusEffect: przedmioty (do filtrów i formularza) mogą zostać
   // dodane na zakładce „Przedmioty" — odświeżamy zadania i przedmioty po wejściu.
+  const load = useCallback(async () => {
+    try {
+      setLoadError(false);
+      setLoading(true);
+      const t = await loadTasks();
+      const s = await loadData("subjects");
+      setTasks(t);
+      setSubjects(s || []);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      async function load() {
-        const t = await loadTasks();
-        const s = await loadData("subjects");
-        setTasks(t);
-        setSubjects(s || []);
-      }
       load();
-    }, [])
+    }, [load])
   );
 
   const updateTasks = (updated) => {
@@ -135,6 +148,9 @@ export default function TasksScreen() {
     statusFilter,
     sortBy
   );
+
+  if (loading) return <ScreenStatus loading />;
+  if (loadError) return <ScreenStatus error onRetry={load} />;
 
   return (
     <View style={styles.container}>
