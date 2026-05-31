@@ -8,7 +8,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { loadData } from "../utils/storage";
 import {
@@ -28,6 +28,8 @@ import TaskForm from "../components/TaskForm";
 import ScreenStatus from "../components/ScreenStatus";
 
 export default function TasksScreen() {
+  const navigation = useNavigation();
+
   const [tasks, setTasks] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
@@ -267,7 +269,12 @@ export default function TasksScreen() {
             >
               <Text style={styles.checkboxText}>{item.done ? "✓" : " "}</Text>
             </TouchableOpacity>
-            <View style={styles.taskInfo}>
+            <TouchableOpacity
+              style={styles.taskInfo}
+              onPress={() =>
+                navigation.navigate("TaskDetail", { taskId: item.id })
+              }
+            >
               <Text style={[styles.taskName, item.done && styles.taskNameDone]}>
                 {item.name}
               </Text>
@@ -280,7 +287,7 @@ export default function TasksScreen() {
               {item.description ? (
                 <Text style={styles.taskDesc}>{item.description}</Text>
               ) : null}
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => openEdit(item)}
               style={styles.iconBtn}

@@ -30,7 +30,7 @@ po ponownym uruchomieniu aplikacji — również offline.
 | -------------- | ------------------------------------------- |
 | Framework      | React Native `0.81.5` + Expo `~54`          |
 | Język          | JavaScript (React `19.1`)                   |
-| Nawigacja      | React Navigation – Bottom Tabs              |
+| Nawigacja      | React Navigation – Bottom Tabs + Native Stack |
 | Przechowywanie | `@react-native-async-storage/async-storage` |
 | Testy          | Jest + `jest-expo`                          |
 | Jakość kodu    | ESLint 9 (`eslint-config-expo`) + Prettier  |
@@ -85,8 +85,8 @@ StudySprint2/
 ├── App.js                    # Punkt wejścia – SafeAreaProvider + nawigacja
 ├── src/
 │   ├── navigation/
-│   │   └── AppNavigator.js    # Bottom Tabs (5 ekranów)
-│   ├── screens/              # Ekrany (Home, Subjects, Tasks, Timer, Stats)
+│   │   └── AppNavigator.js    # Bottom Tabs + Stack (Zadania → Szczegóły)
+│   ├── screens/              # Ekrany (Home, Subjects, Tasks, TaskDetail, Timer, Stats)
 │   ├── components/
 │   │   └── TaskForm.js       # Współdzielony formularz zadania
 │   ├── logic/                # Czysta logika biznesowa (testowalna)
