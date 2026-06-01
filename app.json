@@ -25,6 +25,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-notifications"]
+    "plugins": [
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d0372cf4-1a5e-4729-a9e3-bb045df65fb7"
+      }
+    },
+    "owner": "kacperormaniec"
   }
 }

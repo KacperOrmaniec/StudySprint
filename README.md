@@ -4,9 +4,6 @@ Mobilna aplikacja do zarządzania nauką metodą Pomodoro. Pozwala organizować
 przedmioty, planować zadania z priorytetami, mierzyć czas nauki (timer 25/5)
 oraz śledzić statystyki postępów. Zbudowana w React Native + Expo.
 
-> ⚠️ **Status:** projekt w trakcie realizacji. Lista funkcji, których jeszcze
-> brakuje do pełnego zaliczenia, znajduje się w pliku [`audit.md`](./audit.md).
-
 ---
 
 ## ✨ Funkcjonalności
@@ -106,6 +103,10 @@ eas build --platform android --profile preview
 Po zakończeniu EAS zwraca **link do pobrania `.apk`** (build wykonuje się w chmurze
 Expo). Plik można zainstalować bezpośrednio na urządzeniu z Androidem.
 
+**Gotowy build (Android, profil `preview`):**
+[expo.dev/accounts/kacperormaniec/projects/StudySprint/builds/6c13abf7-cbe5-4905-b926-a3719864168a](https://expo.dev/accounts/kacperormaniec/projects/StudySprint/builds/6c13abf7-cbe5-4905-b926-a3719864168a)
+— `.apk` do pobrania i instalacji znajduje się pod powyższym linkiem.
+
 Konfiguracja aplikacji (nazwa, **własna ikona**, splash screen, `package`) jest
 w [`app.json`](./app.json). Ikony można wygenerować ponownie skryptem:
 
@@ -168,10 +169,3 @@ pola formularzy, filtry, odliczanie timera) pozostaje w `useState` w ekranach.
 > każdego ekranu i zapisz je w folderze [`screenshots/`](./screenshots) pod nazwami
 > `home.png`, `subjects.png`, `tasks.png`, `timer.png`, `stats.png`. Instrukcja
 > robienia zrzutów (w tym GIF-ów) znajduje się w [`screenshots/README.md`](./screenshots/README.md).
-
----
-
-## 📌 Status realizacji kryteriów
-
-Szczegółowe zestawienie spełnionych i brakujących wymagań zaliczeniowych
-znajduje się w pliku [`audit.md`](./audit.md).
