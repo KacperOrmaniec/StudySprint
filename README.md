@@ -1,19 +1,19 @@
 # StudySprint
 
-Mobilna aplikacja do zarządzania nauką metodą Pomodoro — organizacja przedmiotów,
+Mobilna aplikacja do zarządzania nauką metodą Pomodoro - organizacja przedmiotów,
 planowanie zadań z priorytetami, pomiar czasu nauki (timer 25/5) i śledzenie
 statystyk. Zbudowana w React Native + Expo.
 
 ## Funkcjonalności
 
-- Główna — podsumowanie: liczba sesji nauki, ukończonych zadań i przedmiotów.
-- Przedmioty — dodawanie, edycja i usuwanie przedmiotów.
-- Zadania — tworzenie zadań z opisem, priorytetem i przypisaniem do przedmiotu;
+- Główna - podsumowanie: liczba sesji nauki, ukończonych zadań i przedmiotów.
+- Przedmioty - dodawanie, edycja i usuwanie przedmiotów.
+- Zadania - tworzenie zadań z opisem, priorytetem i przypisaniem do przedmiotu;
   filtrowanie (przedmiot, status), sortowanie (data, priorytet), oznaczanie jako ukończone.
-- Timer — pomodoro 25 min nauki / 5 min przerwy z automatycznym zapisem sesji.
-- Statystyki — łączny czas nauki, liczba sesji, postęp zadań per przedmiot.
+- Timer - pomodoro 25 min nauki / 5 min przerwy z automatycznym zapisem sesji.
+- Statystyki - łączny czas nauki, liczba sesji, postęp zadań per przedmiot.
 
-Dane są zapisywane lokalnie (AsyncStorage) i dostępne po ponownym uruchomieniu — również offline.
+Dane są zapisywane lokalnie (AsyncStorage) i dostępne po ponownym uruchomieniu - również offline.
 
 ## Technologie
 
@@ -22,7 +22,7 @@ Dane są zapisywane lokalnie (AsyncStorage) i dostępne po ponownym uruchomieniu
 | Framework      | React Native `0.81.5` + Expo `~54`            |
 | Język          | JavaScript (React `19.1`)                     |
 | Stan globalny  | Context API (`AppDataContext`)                |
-| Nawigacja      | React Navigation — Bottom Tabs + Native Stack |
+| Nawigacja      | React Navigation - Bottom Tabs + Native Stack |
 | Przechowywanie | `@react-native-async-storage/async-storage`   |
 | Testy          | Jest + `jest-expo`                            |
 | Jakość kodu    | ESLint 9 (`eslint-config-expo`) + Prettier    |
@@ -74,25 +74,25 @@ w [`app.json`](./app.json). Ikony można wygenerować skryptem `node scripts/gen
 Aplikacja przestrzega podstawowych zasad bezpieczeństwa adekwatnych do swojego
 zakresu (dane wyłącznie lokalne, brak logowania i zewnętrznego API):
 
-- Brak kluczy API i sekretów w kodzie — aplikacja nie komunikuje się z żadnym
+- Brak kluczy API i sekretów w kodzie - aplikacja nie komunikuje się z żadnym
   backendem. `.gitignore` pomija pliki `.env*` (pod ewentualne przyszłe sekrety).
-- Walidacja danych wejściowych — nazwy przedmiotów i zadań są walidowane przed
+- Walidacja danych wejściowych - nazwy przedmiotów i zadań są walidowane przed
   zapisem (`validate*` w `src/logic/`); puste wartości są odrzucane, a tekst przycinany.
-- Brak komunikacji sieciowej — wszystkie dane żyją na urządzeniu (AsyncStorage).
+- Brak komunikacji sieciowej - wszystkie dane żyją na urządzeniu (AsyncStorage).
   Ewentualne przyszłe API odbywałoby się wyłącznie po HTTPS.
-- Dobór magazynu do wrażliwości danych — przedmioty, zadania i sesje nie są danymi
+- Dobór magazynu do wrażliwości danych - przedmioty, zadania i sesje nie są danymi
   wrażliwymi, więc AsyncStorage jest właściwym wyborem. `expo-secure-store` jest
   celowo niezastosowany: na obecnym etapie nie ma sekretu do ochrony.
 
 Po dodaniu logowania lub zewnętrznego API token sesji trafiłby do `expo-secure-store`
-(szyfrowany Keychain/Keystore), a klucze API do zmiennych środowiskowych — zgodnie
+(szyfrowany Keychain/Keystore), a klucze API do zmiennych środowiskowych - zgodnie
 z OWASP Mobile Top 10 (M9: Insecure Data Storage).
 
 ## Struktura projektu
 
 ```
 StudySprint2/
-├── App.js                     # Punkt wejścia — SafeAreaProvider + nawigacja
+├── App.js                     # Punkt wejścia - SafeAreaProvider + nawigacja
 ├── src/
 │   ├── context/AppDataContext.js  # Globalny stan (Context API): przedmioty/zadania/sesje
 │   ├── navigation/AppNavigator.js # Bottom Tabs + Stack (Zadania → Szczegóły)
@@ -106,7 +106,7 @@ StudySprint2/
 ```
 
 Logika biznesowa (walidacja, CRUD, filtrowanie, formatowanie czasu, statystyki)
-jest wydzielona z komponentów do `src/logic/` — w pełni testowalna bez renderowania UI.
+jest wydzielona z komponentów do `src/logic/` - w pełni testowalna bez renderowania UI.
 Globalne dane żyją w jednym `AppDataContext` (jedno źródło prawdy, zapis do AsyncStorage),
 a stan lokalny (modale, pola formularzy, filtry, odliczanie timera) pozostaje w `useState`.
 
