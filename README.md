@@ -1,199 +1,121 @@
-# StudySprint 📚
+# StudySprint
 
-Mobilna aplikacja do zarządzania nauką metodą Pomodoro. Pozwala organizować
-przedmioty, planować zadania z priorytetami, mierzyć czas nauki (timer 25/5)
-oraz śledzić statystyki postępów. Zbudowana w React Native + Expo.
+Mobilna aplikacja do zarządzania nauką metodą Pomodoro — organizacja przedmiotów,
+planowanie zadań z priorytetami, pomiar czasu nauki (timer 25/5) i śledzenie
+statystyk. Zbudowana w React Native + Expo.
 
----
+## Funkcjonalności
 
-## ✨ Funkcjonalności
+- Główna — podsumowanie: liczba sesji nauki, ukończonych zadań i przedmiotów.
+- Przedmioty — dodawanie, edycja i usuwanie przedmiotów.
+- Zadania — tworzenie zadań z opisem, priorytetem i przypisaniem do przedmiotu;
+  filtrowanie (przedmiot, status), sortowanie (data, priorytet), oznaczanie jako ukończone.
+- Timer — pomodoro 25 min nauki / 5 min przerwy z automatycznym zapisem sesji.
+- Statystyki — łączny czas nauki, liczba sesji, postęp zadań per przedmiot.
 
-- **Główna** – podsumowanie: liczba sesji nauki, ukończonych zadań i przedmiotów.
-- **Przedmioty** – dodawanie, edycja i usuwanie przedmiotów (np. Matematyka, Fizyka).
-- **Zadania** – tworzenie zadań z opisem, priorytetem (wysoki/średni/niski)
-  i przypisaniem do przedmiotu; filtrowanie (przedmiot, status) i sortowanie
-  (data, priorytet); oznaczanie jako ukończone.
-- **Timer** – pomodoro 25 min nauki / 5 min przerwy z automatycznym zapisem sesji.
-- **Statystyki** – łączny czas nauki, liczba sesji, postęp zadań per przedmiot.
+Dane są zapisywane lokalnie (AsyncStorage) i dostępne po ponownym uruchomieniu — również offline.
 
-Wszystkie dane są zapisywane lokalnie na urządzeniu (AsyncStorage) i dostępne
-po ponownym uruchomieniu aplikacji — również offline.
-
----
-
-## 🛠️ Użyte technologie
+## Technologie
 
 | Obszar         | Technologia                                   |
 | -------------- | --------------------------------------------- |
 | Framework      | React Native `0.81.5` + Expo `~54`            |
 | Język          | JavaScript (React `19.1`)                     |
 | Stan globalny  | Context API (`AppDataContext`)                |
-| Nawigacja      | React Navigation – Bottom Tabs + Native Stack |
+| Nawigacja      | React Navigation — Bottom Tabs + Native Stack |
 | Przechowywanie | `@react-native-async-storage/async-storage`   |
 | Testy          | Jest + `jest-expo`                            |
 | Jakość kodu    | ESLint 9 (`eslint-config-expo`) + Prettier    |
 
----
+## Uruchomienie
 
-## 🚀 Uruchomienie (w mniej niż 5 minut)
-
-### Wymagania wstępne
-
-- Node.js 18+ oraz npm
-- Aplikacja **Expo Go** na telefonie (Android/iOS) **lub** emulator Android / symulator iOS
-
-### Kroki
+Wymagania: Node.js 18+, npm oraz aplikacja Expo Go (Android/iOS) lub emulator/symulator.
 
 ```bash
-# 1. Sklonuj repozytorium
 git clone <URL_REPOZYTORIUM>
 cd StudySprint2
-
-# 2. Zainstaluj zależności
 npm install
-
-# 3. Uruchom serwer deweloperski Expo
 npm start
 ```
 
-Następnie:
+Następnie: zeskanuj kod QR aplikacją Expo Go (telefon), naciśnij `a` (Android),
+`i` (iOS) lub `w` (web).
 
-- **Telefon:** zeskanuj kod QR z terminala aplikacją Expo Go.
-- **Android:** naciśnij `a` (uruchomi emulator) lub `npm run android`.
-- **iOS:** naciśnij `i` lub `npm run ios`.
-- **Web:** naciśnij `w` lub `npm run web`.
+## Testy i jakość kodu
 
----
-
-## 🧪 Testy
-
-Projekt zawiera ok. 35 testów jednostkowych pokrywających logikę zadań,
-przedmiotów, timera i statystyk.
+Projekt zawiera ok. 35 testów jednostkowych logiki zadań, przedmiotów, timera i statystyk.
 
 ```bash
-npm test
-```
-
-Sprawdzenie jakości kodu:
-
-```bash
+npm test         # Jest
 npm run lint     # ESLint
 npm run format   # Prettier
 ```
 
----
-
-## 📦 Budowanie aplikacji (EAS Build)
+## Budowanie (EAS Build)
 
 Konfiguracja buildów znajduje się w [`eas.json`](./eas.json). Profil `preview`
-tworzy instalowalny plik **`.apk`** dla Androida.
+tworzy instalowalny plik `.apk` dla Androida.
 
 ```bash
-# 1. Zainstaluj EAS CLI i zaloguj się na konto Expo
 npm install -g eas-cli
 eas login
-
-# 2. (jednorazowo) powiąż projekt z kontem – doda projectId do app.json
-eas init
-
-# 3. Zbuduj plik APK (profil preview)
+eas init                                          # jednorazowo
 eas build --platform android --profile preview
 ```
 
-Po zakończeniu EAS zwraca **link do pobrania `.apk`** (build wykonuje się w chmurze
-Expo). Plik można zainstalować bezpośrednio na urządzeniu z Androidem.
-
-**Gotowy build (Android, profil `preview`):**
+Gotowy build (Android, profil `preview`):
 [expo.dev/accounts/kacperormaniec/projects/StudySprint/builds/6c13abf7-cbe5-4905-b926-a3719864168a](https://expo.dev/accounts/kacperormaniec/projects/StudySprint/builds/6c13abf7-cbe5-4905-b926-a3719864168a)
-— `.apk` do pobrania i instalacji znajduje się pod powyższym linkiem.
 
-Konfiguracja aplikacji (nazwa, **własna ikona**, splash screen, `package`) jest
-w [`app.json`](./app.json). Ikony można wygenerować ponownie skryptem:
+Konfiguracja aplikacji (nazwa, własna ikona, splash screen, `package`) jest
+w [`app.json`](./app.json). Ikony można wygenerować skryptem `node scripts/generate-icons.js`.
 
-```bash
-node scripts/generate-icons.js
-```
-
----
-
-## 🔒 Bezpieczeństwo
+## Bezpieczeństwo
 
 Aplikacja przestrzega podstawowych zasad bezpieczeństwa adekwatnych do swojego
 zakresu (dane wyłącznie lokalne, brak logowania i zewnętrznego API):
 
-- **Brak kluczy API i sekretów w kodzie** – aplikacja nie komunikuje się z
-  żadnym zewnętrznym backendem, więc nie ma tokenów ani kluczy do ujawnienia.
-  `.gitignore` pomija pliki `.env*` (przygotowane pod ewentualne przyszłe sekrety).
-- **Walidacja danych wejściowych** – nazwy przedmiotów i zadań są walidowane
-  przed zapisem (`validate*` w `src/logic/`); puste/białe wartości są odrzucane,
-  a tekst przycinany (`trim`), co zapobiega zapisaniu „śmieciowych" rekordów.
-- **Brak komunikacji sieciowej → brak ryzyka HTTP** – wszystkie dane żyją na
-  urządzeniu (AsyncStorage). Gdyby w przyszłości doszło API, komunikacja
-  odbywałaby się wyłącznie po **HTTPS**.
-- **Dobór magazynu do wrażliwości danych** – przedmioty, zadania i sesje nie są
-  danymi wrażliwymi, więc AsyncStorage jest tu właściwym wyborem.
-  `expo-secure-store` jest celowo **niezastosowany**: na obecnym etapie nie ma
-  żadnego sekretu (tokenu, hasła, klucza) do ochrony.
+- Brak kluczy API i sekretów w kodzie — aplikacja nie komunikuje się z żadnym
+  backendem. `.gitignore` pomija pliki `.env*` (pod ewentualne przyszłe sekrety).
+- Walidacja danych wejściowych — nazwy przedmiotów i zadań są walidowane przed
+  zapisem (`validate*` w `src/logic/`); puste wartości są odrzucane, a tekst przycinany.
+- Brak komunikacji sieciowej — wszystkie dane żyją na urządzeniu (AsyncStorage).
+  Ewentualne przyszłe API odbywałoby się wyłącznie po HTTPS.
+- Dobór magazynu do wrażliwości danych — przedmioty, zadania i sesje nie są danymi
+  wrażliwymi, więc AsyncStorage jest właściwym wyborem. `expo-secure-store` jest
+  celowo niezastosowany: na obecnym etapie nie ma sekretu do ochrony.
 
-**Zrozumienie zagrożeń / dalsza rozbudowa:** w momencie dodania logowania lub
-zewnętrznego API (kryteria rozszerzone B/C) bezpieczne przechowywanie staje się
-wymagane — **token sesji** trafiłby wówczas do `expo-secure-store` (szyfrowany
-Keychain/Keystore), a **klucze API** do zmiennych środowiskowych zamiast do kodu.
-Świadomie rozdzielamy więc dane jawne (lokalny storage) od danych wrażliwych
-(SecureStore), zgodnie z OWASP Mobile Top 10 (M9: Insecure Data Storage).
+Po dodaniu logowania lub zewnętrznego API token sesji trafiłby do `expo-secure-store`
+(szyfrowany Keychain/Keystore), a klucze API do zmiennych środowiskowych — zgodnie
+z OWASP Mobile Top 10 (M9: Insecure Data Storage).
 
----
-
-## 📁 Struktura projektu
+## Struktura projektu
 
 ```
 StudySprint2/
-├── App.js                    # Punkt wejścia – SafeAreaProvider + nawigacja
+├── App.js                     # Punkt wejścia — SafeAreaProvider + nawigacja
 ├── src/
-│   ├── context/
-│   │   └── AppDataContext.js  # Globalny stan (Context API): przedmioty/zadania/sesje
-│   ├── navigation/
-│   │   └── AppNavigator.js    # Bottom Tabs + Stack (Zadania → Szczegóły)
-│   ├── screens/              # Ekrany (Home, Subjects, Tasks, TaskDetail, Timer, Stats)
-│   ├── components/           # TaskForm, ScreenStatus (loading/error), ErrorBoundary
-│   ├── theme/
-│   │   └── index.js          # Design tokens: colors, spacing, radius, fontSize
-│   ├── logic/                # Czysta logika biznesowa (testowalna)
-│   │   ├── tasksLogic.js
-│   │   ├── subjectsLogic.js
-│   │   ├── timerLogic.js
-│   │   └── statsLogic.js
-│   └── utils/
-│       ├── storage.js        # Wrapper na AsyncStorage (save/load)
-│       └── notifications.js  # Uprawnienia + lokalne powiadomienia
-├── scripts/
-│   └── generate-icons.js     # Generator własnych ikon (SVG → PNG)
-└── __tests__/                # Testy jednostkowe logiki
+│   ├── context/AppDataContext.js  # Globalny stan (Context API): przedmioty/zadania/sesje
+│   ├── navigation/AppNavigator.js # Bottom Tabs + Stack (Zadania → Szczegóły)
+│   ├── screens/               # Home, Subjects, Tasks, TaskDetail, Timer, Stats
+│   ├── components/            # TaskForm, ScreenStatus (loading/error), ErrorBoundary
+│   ├── theme/index.js         # Design tokens: colors, spacing, radius, fontSize
+│   ├── logic/                 # Czysta logika biznesowa (testowalna)
+│   └── utils/                 # storage.js (AsyncStorage), notifications.js
+├── scripts/generate-icons.js  # Generator własnych ikon (SVG → PNG)
+└── __tests__/                 # Testy jednostkowe logiki
 ```
 
-**Decyzja architektoniczna:** cała logika biznesowa (walidacja, CRUD, filtrowanie,
-formatowanie czasu, obliczanie statystyk) jest wydzielona z komponentów do
-modułów `src/logic/`. Dzięki temu jest w pełni testowalna bez renderowania UI,
-a komponenty ekranów pozostają cienką warstwą prezentacji + stanu lokalnego.
+Logika biznesowa (walidacja, CRUD, filtrowanie, formatowanie czasu, statystyki)
+jest wydzielona z komponentów do `src/logic/` — w pełni testowalna bez renderowania UI.
+Globalne dane żyją w jednym `AppDataContext` (jedno źródło prawdy, zapis do AsyncStorage),
+a stan lokalny (modale, pola formularzy, filtry, odliczanie timera) pozostaje w `useState`.
 
-**Zarządzanie stanem:** globalne dane (przedmioty, zadania, sesje) żyją w jednym
-**Context API** (`AppDataContext`) — to jedno źródło prawdy współdzielone przez
-ekrany, z zapisem do AsyncStorage w warstwie kontekstu. Stan lokalny (modale,
-pola formularzy, filtry, odliczanie timera) pozostaje w `useState` w ekranach.
+## Zrzuty ekranu
 
----
+|                Główna                |                Przedmioty                 |              Zadania              |
+| :----------------------------------: | :---------------------------------------: | :-------------------------------: |
+| ![Główna](./screenshots/home.png) | ![Przedmioty](./screenshots/subjects.png) | ![Zadania](./screenshots/tasks.png) |
 
-## 📸 Zrzuty ekranu
-
-|                 Główna                  |                Przedmioty                 |               Zadania               |
-| :-------------------------------------: | :---------------------------------------: | :---------------------------------: |
-| ![Ekran główny](./screenshots/home.png) | ![Przedmioty](./screenshots/subjects.png) | ![Zadania](./screenshots/tasks.png) |
-
-|               Timer               |               Statystyki               |
-| :-------------------------------: | :------------------------------------: |
+|              Timer              |              Statystyki              |
+| :----------------------------: | :----------------------------------: |
 | ![Timer](./screenshots/timer.png) | ![Statystyki](./screenshots/stats.png) |
-
-> 📷 **Jak dograć własne zrzuty:** uruchom aplikację (`npm start`), zrób screenshoty
-> każdego ekranu i zapisz je w folderze [`screenshots/`](./screenshots) pod nazwami
-> `home.png`, `subjects.png`, `tasks.png`, `timer.png`, `stats.png`. Instrukcja
-> robienia zrzutów (w tym GIF-ów) znajduje się w [`screenshots/README.md`](./screenshots/README.md).
