@@ -116,6 +116,34 @@ node scripts/generate-icons.js
 
 ---
 
+## 🔒 Bezpieczeństwo
+
+Aplikacja przestrzega podstawowych zasad bezpieczeństwa adekwatnych do swojego
+zakresu (dane wyłącznie lokalne, brak logowania i zewnętrznego API):
+
+- **Brak kluczy API i sekretów w kodzie** – aplikacja nie komunikuje się z
+  żadnym zewnętrznym backendem, więc nie ma tokenów ani kluczy do ujawnienia.
+  `.gitignore` pomija pliki `.env*` (przygotowane pod ewentualne przyszłe sekrety).
+- **Walidacja danych wejściowych** – nazwy przedmiotów i zadań są walidowane
+  przed zapisem (`validate*` w `src/logic/`); puste/białe wartości są odrzucane,
+  a tekst przycinany (`trim`), co zapobiega zapisaniu „śmieciowych" rekordów.
+- **Brak komunikacji sieciowej → brak ryzyka HTTP** – wszystkie dane żyją na
+  urządzeniu (AsyncStorage). Gdyby w przyszłości doszło API, komunikacja
+  odbywałaby się wyłącznie po **HTTPS**.
+- **Dobór magazynu do wrażliwości danych** – przedmioty, zadania i sesje nie są
+  danymi wrażliwymi, więc AsyncStorage jest tu właściwym wyborem.
+  `expo-secure-store` jest celowo **niezastosowany**: na obecnym etapie nie ma
+  żadnego sekretu (tokenu, hasła, klucza) do ochrony.
+
+**Zrozumienie zagrożeń / dalsza rozbudowa:** w momencie dodania logowania lub
+zewnętrznego API (kryteria rozszerzone B/C) bezpieczne przechowywanie staje się
+wymagane — **token sesji** trafiłby wówczas do `expo-secure-store` (szyfrowany
+Keychain/Keystore), a **klucze API** do zmiennych środowiskowych zamiast do kodu.
+Świadomie rozdzielamy więc dane jawne (lokalny storage) od danych wrażliwych
+(SecureStore), zgodnie z OWASP Mobile Top 10 (M9: Insecure Data Storage).
+
+---
+
 ## 📁 Struktura projektu
 
 ```
